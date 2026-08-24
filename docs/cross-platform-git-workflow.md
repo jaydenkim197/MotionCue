@@ -33,6 +33,12 @@ This repository is the single source of truth for the shared protocol, implement
 
 Do not edit the same shared document on both computers before pulling. For urgent parallel work, keep Windows changes in `src/` and Mac changes in `mobile/ios/`, then make documentation changes sequentially.
 
+## Optional automatic snapshots
+
+Windows runs `tools/git-autosync.ps1` through a per-user Scheduled Task every two minutes. It fetches GitHub, makes one `autosync(windows)` snapshot only when the working tree changed, rebases only when Git can do so normally, and pushes the result. It does not use Syncthing and never overwrites a merge/rebase conflict: it pauses, preserves all files, and logs the reason to `%LOCALAPPDATA%\MotionCue\git-autosync.log`.
+
+The Mac should use the same policy through a `launchd` job, with `autosync(mac)` commit messages. Both automations must be stopped before an intentional history rewrite, mass refactor, or direct conflict resolution.
+
 ## Initial publication
 
 1. Create a private GitHub repository named `MotionCue` with no generated README, license, or `.gitignore`.
@@ -45,6 +51,6 @@ Do not edit the same shared document on both computers before pulling. For urgen
 
 ## Prohibited synchronization targets
 
-- Do not put the live repository inside OneDrive, iCloud Drive, Dropbox, or a Syncthing mirror.
+- Do not put the live repository inside OneDrive, iCloud Drive, Dropbox, or a Syncthing mirror. Do not synchronize a Git working tree with Syncthing while another machine also has an independent Git automation process.
 - Do not commit certificates, provisioning profiles, Apple account material, `.xcuserdata`, `DerivedData`, `.tools`, `bin`, `obj`, or released executables.
 - Do not use USB `cut`/`paste` as a source-control substitute. Copy it only as an offline backup.

@@ -30,6 +30,8 @@
 - GitHub가 영남대 이메일의 공개를 차단하므로 이 repository의 Git author email은 `jaydenkim197@users.noreply.github.com`을 사용한다.
 - `.gitignore`에 Xcode user data·DerivedData, macOS resource fork/`.DS_Store`, Python cache, QA rendering, temporary PDF/build output을 추가했다. 이미 제외 중인 `.tools`, `bin`, `obj`, artifacts는 계속 원격에 올리지 않는다.
 - `.gitattributes`로 공유 텍스트 파일을 LF 줄바꿈으로 고정해 Windows와 macOS에서 줄바꿈만 다른 대규모 diff가 생기지 않게 했다. Office/PDF/이미지/실행 파일은 binary로 취급한다.
+- Syncthing으로 작업트리 전체와 독립 `.git` repositories를 함께 자동화하는 안은 채택하지 않았다. 작업트리의 변경과 Git commit/pull/push가 서로 다른 두 컴퓨터에서 경합하면 공통 문서와 Xcode project file에 데이터 보존형 충돌을 과도하게 만들기 때문이다.
+- 대신 GitHub-only 2분 주기 Windows autosync를 `tools/git-autosync.ps1`로 추가했다. 이 도구는 dirty tree를 하나의 snapshot으로 커밋하고 fetch/rebase/push하되, merge·rebase·lock·충돌 상태에서는 자동 덮어쓰기 없이 중단하고 `%LOCALAPPDATA%\\MotionCue\\git-autosync.log`에 상태를 남긴다.
 - `docs/cross-platform-git-workflow.md`에 초기 publish, normal handoff 및 금지된 동기화 대상을 기록했다.
 
 영향:
