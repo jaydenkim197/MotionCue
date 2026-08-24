@@ -33,6 +33,7 @@
 - Syncthing으로 작업트리 전체와 독립 `.git` repositories를 함께 자동화하는 안은 채택하지 않았다. 작업트리의 변경과 Git commit/pull/push가 서로 다른 두 컴퓨터에서 경합하면 공통 문서와 Xcode project file에 데이터 보존형 충돌을 과도하게 만들기 때문이다.
 - 대신 GitHub-only 2분 주기 Windows autosync를 `tools/git-autosync.ps1`로 추가했다. 이 도구는 dirty tree를 하나의 snapshot으로 커밋하고 fetch/rebase/push하되, merge·rebase·lock·충돌 상태에서는 자동 덮어쓰기 없이 중단하고 `%LOCALAPPDATA%\\MotionCue\\git-autosync.log`에 상태를 남긴다.
 - 현재 Windows 사용자 로그인 세션에 `MotionCue Git AutoSync` Scheduled Task를 2분 반복으로 등록했다. 배터리 사용 중에도 실행하도록 설정하며, 이 작업은 로그인한 사용자만 실행한다.
+- Mac counterpart의 clone-first·launchd 설정 지침과 실행 프롬프트를 `docs/mac-git-autosync-setup.md`에 기록했다.
 - `docs/cross-platform-git-workflow.md`에 초기 publish, normal handoff 및 금지된 동기화 대상을 기록했다.
 
 영향:
