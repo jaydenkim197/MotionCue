@@ -1,0 +1,171 @@
+<Window x:Class="MotionCue.Windows.UI.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MotionCue Settings"
+        Width="620" Height="680"
+        MinWidth="560" MinHeight="580"
+        WindowStartupLocation="CenterScreen">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Margin="30">
+      <TextBlock Text="MotionCue" FontSize="26" FontWeight="SemiBold" Foreground="#0B2545" />
+      <TextBlock x:Name="StatusText" Margin="0,6,0,22" Foreground="#667085" TextWrapping="Wrap" />
+
+      <TextBlock Text="Motion Cues" FontSize="17" FontWeight="SemiBold" Foreground="#2E74B5" />
+      <StackPanel Orientation="Horizontal" Margin="0,8,0,22">
+        <RadioButton x:Name="AutomaticRadio" Content="Automatic" Tag="Automatic" Checked="Mode_Checked" />
+        <RadioButton x:Name="OnRadio" Content="On" Tag="On" Checked="Mode_Checked" />
+        <RadioButton x:Name="OffRadio" Content="Off" Tag="Off" Checked="Mode_Checked" />
+      </StackPanel>
+
+      <Separator />
+      <TextBlock Margin="0,20,0,0" Text="Appearance" FontSize="17" FontWeight="SemiBold" Foreground="#2E74B5" />
+      <TextBlock Margin="0,10,0,4" Text="Pattern" FontWeight="SemiBold" />
+      <StackPanel Orientation="Horizontal">
+        <RadioButton x:Name="RegularRadio" Content="Regular" Tag="Regular" Checked="Pattern_Checked" />
+        <RadioButton x:Name="DynamicRadio" Content="Dynamic" Tag="Dynamic" Checked="Pattern_Checked" />
+      </StackPanel>
+      <TextBlock Margin="0,10,0,4" Text="Color" FontWeight="SemiBold" />
+      <ComboBox x:Name="ColorCombo" Width="180" HorizontalAlignment="Left" SelectionChanged="ColorCombo_SelectionChanged">
+        <ComboBoxItem Content="Graphite" Tag="#6F747C" />
+        <ComboBoxItem Content="Blue Gray" Tag="#597386" />
+        <ComboBoxItem Content="Warm Gray" Tag="#746E69" />
+        <ComboBoxItem Content="White" Tag="#F2F4F7" />
+      </ComboBox>
+      <CheckBox x:Name="LargerDotsCheck" Margin="0,10,0,0" Content="Larger dots" Click="Appearance_Click" />
+      <CheckBox x:Name="MoreDotsCheck" Content="More dots" Click="Appearance_Click" />
+
+      <Separator Margin="0,16,0,0" />
+      <TextBlock Margin="0,20,0,0" Text="System" FontSize="17" FontWeight="SemiBold" Foreground="#2E74B5" />
+      <CheckBox x:Name="StartupCheck" Margin="0,8,0,0" Content="Start with Windows" Click="Startup_Click" />
+
+      <Separator Margin="0,16,0,0" />
+      <TextBlock Margin="0,20,0,0" Text="About" FontSize="17" FontWeight="SemiBold" Foreground="#2E74B5" />
+      <TextBlock x:Name="VersionText" Margin="0,8,0,0" Text="Version 0.1.0-dev" Foreground="#667085" Cursor="Hand" MouseLeftButtonUp="VersionText_MouseLeftButtonUp" />
+      <TextBlock Margin="0,5,0,0" Text="Local processing · no account · no telemetry · no location history" Foreground="#667085" />
+
+      <StackPanel x:Name="DeveloperPanel" Visibility="Collapsed" Margin="0,22,0,0">
+        <Border Height="1" Background="#D6DCE5" Margin="0,0,0,18" />
+        <TextBlock Text="Developer Mode" FontSize="17" FontWeight="SemiBold" Foreground="#9B1C1C" />
+        <TextBlock Margin="0,6,0,14" Foreground="#667085" Text="Phone IMU over BLE is the only live motion source. Virtual SensorFrame replay exercises the same estimator without physical movement." TextWrapping="Wrap" />
+        <TextBlock Text="Phone sensor (BLE)" FontWeight="SemiBold" />
+        <Grid x:Name="PhoneSensorControls" Margin="0,6,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <ComboBox x:Name="PhoneDeviceCombo" MinWidth="220" DisplayMemberPath="Name" />
+          <Button x:Name="PhoneRefreshButton" Grid.Column="1" Content="Refresh" Click="PhoneRefresh_Click" />
+          <Button x:Name="PhoneConnectButton" Grid.Column="2" Content="Connect" Click="PhoneConnect_Click" />
+          <Button x:Name="PhoneDisconnectButton" Grid.Column="3" Content="Disconnect" Click="PhoneDisconnect_Click" />
+        </Grid>
+        <TextBlock x:Name="PhoneStatusText" Margin="0,5,0,12" Foreground="#667085" TextWrapping="Wrap" />
+        <TextBlock Text="Virtual SensorFrame replay" FontWeight="SemiBold" />
+        <WrapPanel x:Name="SimulationControls">
+          <Button Content="Full demo" Tag="FullDemo" Click="PhoneSimulation_Click" />
+          <Button Content="Accelerate" Tag="Accelerate" Click="PhoneSimulation_Click" />
+          <Button Content="Brake" Tag="Brake" Click="PhoneSimulation_Click" />
+          <Button Content="Turn Left" Tag="TurnLeft" Click="PhoneSimulation_Click" />
+          <Button Content="Turn Right" Tag="TurnRight" Click="PhoneSimulation_Click" />
+          <Button Content="Neutral" Tag="Neutral" Click="PhoneSimulation_Click" />
+          <Button Content="Dropout" Tag="Dropout" Click="PhoneSimulation_Click" />
+        </WrapPanel>
+        <TextBox x:Name="DiagnosticsText" Margin="0,10,0,0" Padding="12" Height="260" IsReadOnly="True" FontFamily="Consolas" FontSize="12" VerticalScrollBarVisibility="Auto" TextWrapping="NoWrap" Background="#F7F8FA" />
+
+        <Border Height="1" Background="#D6DCE5" Margin="0,22,0,18" />
+        <TextBlock Text="Research Session" FontSize="17" FontWeight="SemiBold" Foreground="#6941C6" />
+        <TextBlock Margin="0,6,0,12" Foreground="#667085" TextWrapping="Wrap"
+                   Text="Records derived motion and cue state only. No location coordinates are collected. Use anonymous participant codes, not names." />
+
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="18" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+
+          <TextBlock Text="Participant code" FontWeight="SemiBold" />
+          <TextBlock Grid.Column="2" Text="Session ID" FontWeight="SemiBold" />
+          <TextBox x:Name="ParticipantCodeText" Grid.Row="1" Margin="0,4,0,10" Text="P01" MaxLength="40" />
+          <TextBox x:Name="SessionIdText" Grid.Row="1" Grid.Column="2" Margin="0,4,0,10" Text="S01" MaxLength="40" />
+
+          <TextBlock Grid.Row="2" Text="Condition" FontWeight="SemiBold" />
+          <TextBlock Grid.Row="2" Grid.Column="2" Text="FMS interval" FontWeight="SemiBold" />
+          <ComboBox x:Name="ResearchConditionCombo" Grid.Row="3" Margin="0,4,0,0" SelectedIndex="1">
+            <ComboBoxItem Content="No Cue" Tag="NoCue" />
+            <ComboBoxItem Content="Regular" Tag="Regular" />
+            <ComboBoxItem Content="Dynamic" Tag="Dynamic" />
+          </ComboBox>
+          <ComboBox x:Name="FmsIntervalCombo" Grid.Row="3" Grid.Column="2" Margin="0,4,0,0" SelectedIndex="1">
+            <ComboBoxItem Content="10 seconds · QA only" Tag="10" />
+            <ComboBoxItem Content="60 seconds · protocol" Tag="60" />
+          </ComboBox>
+        </Grid>
+
+        <WrapPanel Margin="0,14,0,0">
+          <Button x:Name="StartResearchButton" Content="Start session" Click="StartResearch_Click" />
+          <Button x:Name="StopResearchButton" Content="Stop &amp; save" Click="StopResearch_Click" IsEnabled="False" />
+          <Button x:Name="EmergencyStopButton" Content="Emergency stop" Click="EmergencyStop_Click" IsEnabled="False"
+                  Background="#FFF1F0" Foreground="#B42318" />
+        </WrapPanel>
+
+        <Grid Margin="0,12,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <TextBox x:Name="MarkerText" MaxLength="200" ToolTip="Short route or event marker; do not enter names." />
+          <Button x:Name="AddMarkerButton" Grid.Column="1" Content="Add marker" Click="AddMarker_Click" IsEnabled="False" />
+        </Grid>
+
+        <Grid Margin="0,10,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="110" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <TextBlock VerticalAlignment="Center" Text="FMS score (0–20)" FontWeight="SemiBold" />
+          <ComboBox x:Name="ManualFmsCombo" Grid.Column="1" Margin="10,0,0,0" SelectedIndex="0">
+            <ComboBoxItem Content="0" />
+            <ComboBoxItem Content="1" />
+            <ComboBoxItem Content="2" />
+            <ComboBoxItem Content="3" />
+            <ComboBoxItem Content="4" />
+            <ComboBoxItem Content="5" />
+            <ComboBoxItem Content="6" />
+            <ComboBoxItem Content="7" />
+            <ComboBoxItem Content="8" />
+            <ComboBoxItem Content="9" />
+            <ComboBoxItem Content="10" />
+            <ComboBoxItem Content="11" />
+            <ComboBoxItem Content="12" />
+            <ComboBoxItem Content="13" />
+            <ComboBoxItem Content="14" />
+            <ComboBoxItem Content="15" />
+            <ComboBoxItem Content="16" />
+            <ComboBoxItem Content="17" />
+            <ComboBoxItem Content="18" />
+            <ComboBoxItem Content="19" />
+            <ComboBoxItem Content="20" />
+          </ComboBox>
+          <Button x:Name="RecordFmsButton" Grid.Column="2" Content="Record FMS" Click="RecordFms_Click" IsEnabled="False" />
+        </Grid>
+
+        <Border Margin="0,12,0,0" Padding="12" Background="#F4F3FF" CornerRadius="5">
+          <StackPanel>
+            <TextBlock x:Name="ResearchStatusText" Text="No research session active" FontWeight="SemiBold" TextWrapping="Wrap" />
+            <TextBlock x:Name="ResearchOutputText" Margin="0,4,0,0" Foreground="#667085" TextWrapping="Wrap" />
+            <TextBlock Margin="0,4,0,0" Foreground="#B42318" Text="Safety hotkey: Ctrl+Shift+F12 immediately stops the session and turns cues off." TextWrapping="Wrap" />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
+</Window>

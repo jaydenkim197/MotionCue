@@ -1,0 +1,10 @@
+\section{Study A: Signal and System Validation}
+\label{sec:study-a}
+
+Study A will validate the sensing and communication chain before any effectiveness claims are made. The initial devices are a Samsung Galaxy A50 running Android~11 and an iPhone~16~Pro running the latest stable iOS available at testing. Exact model identifiers, OS builds, application commits, protocol version, sensor names, negotiated GATT PDU, and mount configuration will be recorded.
+
+The phones will be fixed to a common rigid mount in the same passenger vehicle. Repeated maneuvers will include stationary periods, acceleration, braking, left and right turns, and stop--resume transitions. If a dedicated reference IMU is unavailable, the limitation of using a fixed comparison phone rather than metrological ground truth will be stated explicitly.
+
+Primary engineering measures are axis agreement, event-detection precision and recall, end-to-end latency, jitter, sequence-derived packet loss, invalid-frame rate, reconnection time, neutralization time, and false-cue rate. BLE is the required first transport. A local Wi-Fi transport will be implemented only if BLE measurements justify the additional scope.
+
+\textbf{Acceptance thresholds, route code, maneuver counts, and reference instrumentation are TBD and must be fixed before data collection.}

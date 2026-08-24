@@ -1,0 +1,22 @@
+\section{MotionCue System}
+\label{sec:system}
+
+MotionCue consists of a Windows desktop application and a native smartphone companion. Android and iOS implementations use their platform sensor APIs but emit the same calibrated SensorFrame representation. The phone acts as the BLE peripheral and GATT server; Windows acts as the central and GATT client. No account, cloud relay, cable, latitude, or longitude is required.
+
+\subsection{SensorFrame v1}
+
+SensorFrame v1 is a 42-byte, little-endian binary message. It contains a protocol version, sequence number, monotonic elapsed time, vehicle-frame user acceleration, rotation rate, gravity, orientation from calibration, accuracy flags, and a CRC-16. The canonical vehicle axes are $+X$ forward, $+Y$ right, and $+Z$ down. The nominal phone sampling rate is 50~Hz and the nominal BLE notification rate is 25~Hz.
+
+Sequence gaps estimate packet loss, while duplicate and out-of-order frames are excluded from cue generation. The receiver neutralizes cues after 250~ms without an accepted frame and marks the phone disconnected after one second. The last non-neutral cue is never held indefinitely.
+
+\subsection{Calibration and Cue Mapping}
+
+The phone must be rigidly mounted with a documented orientation. Calibration transforms platform-native sensor axes into the vehicle frame and establishes the reference quaternion used to detect mount movement. The cue mapping applies dead zones, low-pass filtering, gain, and saturation to longitudinal acceleration, lateral acceleration, and yaw rate. Exact filter and gain constants remain \textbf{TBD} until replay and Study~A data are available.
+
+\subsection{Windows Rendering and Research Instrumentation}
+
+The existing Windows prototype provides a click-through system overlay, configurable dot appearance, deterministic SensorFrame replay, anonymous research sessions, repeated FMS prompts, event markers, location-free CSV output, and an emergency stop. The current research conditions still require migration from the older Regular/Dynamic engineering modes to No Cue, Static Visual Control, and Synchronized Cue.
+
+\subsection{Implementation Status}
+
+As of this draft, SensorFrame encoding, decoding, CRC validation, sequence tracking, dropout monitoring, the Windows GATT client, the vehicle-axis cue estimator, and deterministic replay have automated tests. The iPhone and Android GATT peripherals, app-layer pairing security, yaw-rate fusion, and real-device BLE measurements remain incomplete. The current application contains no GNSS or coordinate-processing path.

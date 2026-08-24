@@ -1,0 +1,37 @@
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+\makeatletter
+\def\input@path{{vendor/iccv2025/}}
+\makeatother
+\usepackage[pagenumbers]{iccv}
+\input{vendor/iccv2025/preamble}
+\definecolor{iccvblue}{rgb}{0.21,0.49,0.74}
+\usepackage[breaklinks,colorlinks,allcolors=iccvblue]{hyperref}
+
+\title{MotionCue: Design and Evaluation of Wireless Smartphone-Synchronized Peripheral Visual Motion Cues for Laptop Passengers}
+
+\author{Jayden Kim\\
+Department of Electronic Engineering\\
+Yeungnam University\\
+{\small Advisor: Chan-Su Lee, Ph.D.}
+}
+
+\begin{document}
+\maketitle
+
+\input{sections/00_abstract}
+\input{sections/01_introduction}
+\input{sections/02_related_work}
+\input{sections/03_system}
+\input{sections/04_study_a}
+\input{sections/05_study_b}
+\input{sections/06_results}
+\input{sections/07_discussion}
+\input{sections/08_conclusion}
+
+{\small
+\bibliographystyle{vendor/iccv2025/ieeenat_fullname}
+\bibliography{references}
+}
+
+\end{document}

@@ -1,0 +1,8 @@
+# Keep shared source and documentation diffs stable across Windows and macOS.
+* text=auto eol=lf
+
+# Office documents and generated binary assets must remain byte-for-byte binary.
+*.docx binary
+*.pdf binary
+*.png binary
+*.exe binary

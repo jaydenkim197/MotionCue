@@ -1,0 +1,18 @@
+\section{Introduction}
+\label{sec:introduction}
+
+Passengers increasingly use laptops for reading, study, and work while traveling. The large and visually stable laptop display can dominate the user's visual field even as vestibular and somatosensory signals indicate acceleration, braking, and turning. This sensory mismatch is a plausible contributor to motion sickness and can limit productive in-vehicle activity.
+
+Peripheral visual cues are a promising way to restore motion information without replacing the user's primary task. Prior work has investigated peripheral feedforward displays, display placement, and mobile motion-cue applications. However, a Windows laptop commonly lacks a suitable inertial sensor, and static visual elements cannot represent the vehicle's current acceleration or turning. MotionCue therefore uses a rigidly mounted smartphone as a wireless inertial sensing companion and renders synchronized cues across the Windows desktop.
+
+The thesis addresses three linked questions. First, can Android and iPhone measurements be transformed into a reproducible vehicle coordinate system? Second, can a local wireless bridge deliver those measurements with sufficiently low latency and safe behavior under packet loss? Third, do synchronized peripheral cues reduce the temporal growth of motion-sickness discomfort without materially degrading laptop task performance?
+
+The intended contributions are:
+\begin{enumerate}
+    \item a cross-platform, coordinate-free smartphone-to-Windows sensor protocol;
+    \item a system-wide peripheral cue overlay with explicit stale-data and disconnection safeguards;
+    \item an engineering evaluation of sensor agreement and wireless timing; and
+    \item an exploratory within-participant vehicle study separating synchronized motion information from the mere presence of static dots.
+\end{enumerate}
+
+This draft reports implementation status conservatively. Claims about motion-sickness effects will be added only after the protocol is finalized and participant data have been collected and analyzed.

@@ -1,0 +1,36 @@
+<Window x:Class="MotionCue.Windows.UI.FmsPromptWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Motion sickness rating"
+        Width="440" Height="290"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        Topmost="True"
+        ShowInTaskbar="False">
+  <Grid Margin="26">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <TextBlock Text="Fast Motion Sickness Scale" FontSize="20" FontWeight="SemiBold" Foreground="#0B2545" />
+    <TextBlock Grid.Row="1" Margin="0,8,0,0" TextWrapping="Wrap" Foreground="#475467"
+               Text="Rate how you feel right now: 0 means no symptoms and 20 means severe sickness." />
+    <TextBlock x:Name="ScoreText" Grid.Row="2" Margin="0,14,0,0" Text="0" FontSize="30" FontWeight="SemiBold" HorizontalAlignment="Center" />
+    <StackPanel Grid.Row="3" Margin="0,4,0,0">
+      <Slider x:Name="ScoreSlider" Minimum="0" Maximum="20" Value="0" TickFrequency="1"
+              IsSnapToTickEnabled="True" ValueChanged="ScoreSlider_ValueChanged" />
+      <Grid Margin="2,0,2,0">
+        <TextBlock Text="0 · none" HorizontalAlignment="Left" Foreground="#667085" />
+        <TextBlock Text="20 · severe" HorizontalAlignment="Right" Foreground="#667085" />
+      </Grid>
+    </StackPanel>
+    <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+      <Button Content="Stop session" Click="StopSession_Click" Background="#FFF1F0" Foreground="#B42318" />
+      <Button Content="Record rating" IsDefault="True" Click="Record_Click" />
+    </StackPanel>
+  </Grid>
+</Window>
