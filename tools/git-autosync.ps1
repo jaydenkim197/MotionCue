@@ -16,7 +16,7 @@ $logPath = Join-Path $logDirectory 'git-autosync.log'
 New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
 
 function Write-AutosyncLog([string]$Message) {
-    $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss KST'
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss 'KST'"
     Add-Content -LiteralPath $logPath -Value "$timestamp $Message"
 }
 
@@ -55,7 +55,7 @@ try {
         Invoke-Git @('add', '-A')
         $staged = & git -C $RepositoryRoot diff --cached --quiet
         if ($LASTEXITCODE -eq 1) {
-            $message = 'autosync(windows): ' + (Get-Date -Format 'yyyy-MM-dd HH:mm KST')
+            $message = 'autosync(windows): ' + (Get-Date -Format "yyyy-MM-dd HH:mm 'KST'")
             Invoke-Git @('commit', '-m', $message)
             Write-AutosyncLog "SNAPSHOT: $message"
         }
