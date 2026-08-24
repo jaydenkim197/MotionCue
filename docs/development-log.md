@@ -22,11 +22,12 @@
 
 ## 2026-08-24 — Windows·Mac 공동 개발을 위한 Git 공유 방식 채택
 
-상태: `DECISION`, `IMPLEMENTED`; GitHub 원격 저장소 생성·첫 push는 `PLANNED`
+상태: `DECISION`, `IMPLEMENTED`, `VERIFIED`
 
 - Windows와 Mac은 같은 private GitHub repository를 각각 clone한 별도 로컬 working copy로 사용한다. USB·OneDrive·iCloud·Syncthing으로 소스 폴더를 실시간 공유하지 않는다.
 - OS별 기능 소유 범위는 Windows의 `src/`·`tests/`, Mac의 `mobile/ios/`이며, `docs/`, protocol, paper와 project metadata는 pull 후 순차적으로 수정한다.
-- 이 Windows 작업 폴더에는 기존 Git 이력이 없었으므로 새 로컬 Git repository를 초기화했다. 아직 remote, commit, push는 만들지 않았다.
+- 이 Windows 작업 폴더에는 기존 Git 이력이 없었으므로 새 로컬 Git repository를 초기화했다. private GitHub remote `https://github.com/jaydenkim197/MotionCue.git`의 `main`에 첫 기준 커밋 `f5dbe0c`를 push했다.
+- GitHub가 영남대 이메일의 공개를 차단하므로 이 repository의 Git author email은 `jaydenkim197@users.noreply.github.com`을 사용한다.
 - `.gitignore`에 Xcode user data·DerivedData, macOS resource fork/`.DS_Store`, Python cache, QA rendering, temporary PDF/build output을 추가했다. 이미 제외 중인 `.tools`, `bin`, `obj`, artifacts는 계속 원격에 올리지 않는다.
 - `.gitattributes`로 공유 텍스트 파일을 LF 줄바꿈으로 고정해 Windows와 macOS에서 줄바꿈만 다른 대규모 diff가 생기지 않게 했다. Office/PDF/이미지/실행 파일은 binary로 취급한다.
 - `docs/cross-platform-git-workflow.md`에 초기 publish, normal handoff 및 금지된 동기화 대상을 기록했다.
