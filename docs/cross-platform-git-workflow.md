@@ -33,11 +33,13 @@ This repository is the single source of truth for the shared protocol, implement
 
 Do not edit the same shared document on both computers before pulling. For urgent parallel work, keep Windows changes in `src/` and Mac changes in `mobile/ios/`, then make documentation changes sequentially.
 
-## Optional automatic snapshots
+## Codex-completion sync
 
-Windows runs `tools/git-autosync.ps1` through a per-user Scheduled Task every two minutes. It fetches GitHub, makes one `autosync(windows)` snapshot only when the working tree changed, rebases only when Git can do so normally, and pushes the result. It does not use Syncthing and never overwrites a merge/rebase conflict: it pauses, preserves all files, and logs the reason to `%LOCALAPPDATA%\MotionCue\git-autosync.log`.
+MotionCue does not run a continuous file watcher or a scheduled background PowerShell process. The user delegates source edits to Codex rather than editing files manually, so the efficient boundary is the end of a meaningful Codex task.
 
-The Mac should use the same policy through a `launchd` job, with `autosync(mac)` commit messages. Both automations must be stopped before an intentional history rewrite, mass refactor, or direct conflict resolution.
+On Windows, Codex runs `tools/git-autosync.ps1` after it finishes a material change. The script fetches GitHub, makes one `autosync(windows)` snapshot only when the working tree changed, rebases only when Git can do so normally, and pushes the result. It never overwrites a merge/rebase conflict: it pauses, preserves all files, and logs the reason to `%LOCALAPPDATA%\MotionCue\git-autosync.log`.
+
+Mac Codex should use the same completion-only policy with `autosync(mac)` commit messages. No `launchd` agent is needed. Before an intentional history rewrite, mass refactor, or direct conflict resolution, run Git commands explicitly rather than the helper.
 
 ## Initial publication
 
