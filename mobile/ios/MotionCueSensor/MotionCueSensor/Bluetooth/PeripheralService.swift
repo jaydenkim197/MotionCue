@@ -6,6 +6,7 @@ struct PeripheralStatus: Equatable {
     var isPoweredOn = false
     var isAdvertising = false
     var connectedCentrals = 0
+    var applicationState = "Foreground"
     var lastNotificationDate: Date?
     var lastError: String?
 }
@@ -24,7 +25,18 @@ final class PeripheralService: NSObject, @unchecked Sendable {
 
     override init() {
         super.init()
-        manager = CBPeripheralManager(delegate: self, queue: queue)
+        manager = CBPeripheralManager(
+            delegate: self,
+            queue: queue,
+            options: [CBPeripheralManagerOptionRestoreIdentifierKey: "com.motioncue.sensor.peripheral"])
+    }
+
+    func setApplicationBackgrounded(_ isBackgrounded: Bool) {
+        queue.async { [weak self] in
+            guard let self else { return }
+            self.status.applicationState = isBackgrounded ? "Background BLE enabled" : "Foreground"
+            self.publishStatus()
+        }
     }
 
     func setAdvertisingEnabled(_ enabled: Bool) {
@@ -147,5 +159,10 @@ extension PeripheralService: CBPeripheralManagerDelegate {
 
     func peripheralManagerIsReady(toUpdateSubscribers peripheral: CBPeripheralManager) {
         sendLatestIfPossible()
+    }
+
+    func peripheralManager(_ peripheral: CBPeripheralManager, willRestoreState dict: [String: Any]) {
+        status.applicationState = "Restored by Bluetooth"
+        publishStatus()
     }
 }

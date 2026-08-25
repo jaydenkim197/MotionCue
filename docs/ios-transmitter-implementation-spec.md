@@ -97,7 +97,9 @@ The UI must display, at minimum: motion-permission status, Bluetooth state, cali
 - Reset stream sequence/session state only at a deliberate new stream/calibration boundary; do not reset it on every subscriber change.
 - Treat app backgrounding, Bluetooth state loss, and subscriber loss as observable lifecycle events. Background behavior is an engineering test item, not an assumed v1 guarantee.
 
-The app needs an `NSBluetoothAlwaysUsageDescription` string that accurately explains that Bluetooth sends local sensor data to the nearby Windows MotionCue app. Add required Bluetooth background capability only after validating that it is needed and supported by the intended test procedure.
+The app needs an `NSBluetoothAlwaysUsageDescription` string that accurately explains that Bluetooth sends local sensor data to the nearby Windows MotionCue app. The v1 app declares the `bluetooth-peripheral` background mode so an already subscribed Windows central can remain connected while the phone is locked. This does not guarantee the 25 Hz application timer or Core Motion delivery while locked; iOS decides when background execution is available.
+
+Acceptance test: connect Windows first, confirm one subscribed central, lock the iPhone for at least 30 seconds, then unlock it. Record whether Windows remained subscribed and whether frames resume without reconnecting. Treat a disconnect as a test result to investigate, not as proof that the background entitlement was ignored.
 
 ## 8. Suggested project structure
 

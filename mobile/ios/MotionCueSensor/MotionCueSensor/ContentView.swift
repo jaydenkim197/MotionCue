@@ -20,6 +20,7 @@ struct ContentView: View {
                     statusRow("Calibration", model.calibrationState.label)
                     statusRow("Windows centrals", "\(model.peripheralStatus.connectedCentrals)")
                     statusRow("Advertising", model.peripheralStatus.isAdvertising ? "On" : "Off")
+                    statusRow("App state", model.peripheralStatus.applicationState)
                     Button(model.peripheralStatus.isAdvertising ? "Stop advertising" : "Start advertising") {
                         model.setAdvertising(!model.peripheralStatus.isAdvertising)
                     }
@@ -33,6 +34,8 @@ struct ContentView: View {
                     statusRow("Frames encoded", "\(model.sentFrameCount)")
                     statusRow("Last notification", lastNotificationText)
                     Text(model.statusMessage).font(.footnote)
+                    Text("When the phone is locked, iOS preserves the BLE peripheral connection when possible. Continuous sensor transmission while locked is controlled by iOS and is not guaranteed.")
+                        .font(.footnote)
                 }
 
                 Section("Sensor diagnostic") {

@@ -20,6 +20,21 @@
 
 ---
 
+## 2026-08-25 — iPhone BLE Peripheral 백그라운드 연결 지원
+
+상태: `IMPLEMENTED`, 설치본 구성 `VERIFIED`; 잠금 화면 실측은 `PLANNED`
+
+- iOS 앱의 명시적 `Info.plist`에 `UIBackgroundModes`의 `bluetooth-peripheral`을 추가했다. 이 권한은 이미 SensorFrame을 구독한 Windows central이 iPhone 잠금 상태에서도 BLE peripheral 연결을 유지할 수 있도록 iOS에 요청한다.
+- `CBPeripheralManager`에 안정적인 restoration identifier를 부여하고, Bluetooth가 peripheral 상태를 복원한 사실을 앱 상태로 표시한다. SwiftUI scene lifecycle도 `Foreground`/`Background BLE enabled`로 표시한다.
+- 잠금 중에도 연결 보존을 요청하는 것과 25 Hz 센서 송신을 보장하는 것은 구분한다. iOS가 백그라운드 CPU·Core Motion 전달 시점을 결정하므로, 잠금 중 continuous stream은 보장하지 않으며 unlock 후 자동 재개 여부를 실측한다.
+- iPhone Debug build를 signing 및 device validation까지 성공했고, 최종 `.app/Info.plist`에서 `UIBackgroundModes = [bluetooth-peripheral]`을 확인했다. 새 build를 연결된 iPhone에 설치하고 실행했다.
+
+남은 실측:
+
+- Windows가 SensorFrame에 구독된 상태에서 iPhone을 30초 이상 잠근 후, Windows가 여전히 subscribed인지와 unlock 시 재연결 없이 frame이 재개되는지를 기록한다.
+
+---
+
 ## 2026-08-25 — 차량 비필수 작업: 연구 조건을 실제 소프트웨어와 정렬
 
 상태: `IMPLEMENTED`; 실제 차량 파일럿 QA는 `PLANNED`
@@ -34,7 +49,7 @@
 남은 차량 비필수 QA:
 
 - live iPhone 연결 상태에서 10초 QA session으로 세 조건의 표시·CSV condition·세션 복구를 검증
-- Mac에서 iPhone BLE peripheral background mode 구현·잠금 화면 연결 유지 실측
+- iPhone 잠금 화면 연결 유지 실측
 
 ---
 

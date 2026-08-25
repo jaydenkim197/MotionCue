@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 @MainActor
 final class AppModel: ObservableObject {
@@ -53,6 +54,19 @@ final class AppModel: ObservableObject {
 
     func setAdvertising(_ enabled: Bool) {
         peripheral.setAdvertisingEnabled(enabled)
+    }
+
+    func handleScenePhase(_ phase: ScenePhase) {
+        switch phase {
+        case .active:
+            peripheral.setApplicationBackgrounded(false)
+        case .background:
+            peripheral.setApplicationBackgrounded(true)
+        case .inactive:
+            break
+        @unknown default:
+            break
+        }
     }
 
     private func consume(_ sample: SensorSample) {
