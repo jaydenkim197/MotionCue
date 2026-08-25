@@ -22,13 +22,14 @@
 
 ## 2026-08-25 — Mac GitHub clone 및 completion-sync 구성
 
-상태: `IMPLEMENTED`; initial helper run 검증 예정
+상태: `IMPLEMENTED`, `VERIFIED`
 
 - Windows와 Mac은 GitHub private repository의 분리된 local clone을 사용하며, 기존 USB 복사본은 `/Users/jayden/vehicle_mode_for_laptop_usb_backup_20260825_1045`로 rename하여 보존했다.
 - 새 GitHub clone은 문서가 지정한 `/Users/jayden/vehicle_mode_for_laptop`를 실제 Mac 작업 경로로 사용한다. `main`은 origin과 clean 상태로 clone됐다.
 - Mac 전용 GitHub SSH key를 설정하고, 기존 다른 repository deploy key와 충돌하지 않도록 `github.com-motioncue` SSH host alias를 사용한다.
 - `tools/git-autosync-mac.sh`는 각 material Codex 작업의 완료 직전에 수동 실행한다. dirty tree를 `autosync(mac)` snapshot으로 한 번 commit하고, fetch/rebase/push하되 Git operation, lock 또는 conflict 때는 파일을 덮어쓰지 않고 repository 밖 log에 멈춤 이유를 기록한다.
 - Windows·Mac 양쪽에서 continuous watcher, 2분 schedule, launchd, Syncthing 및 cloud-drive live workspace는 사용하지 않는다. 순차 작업의 completion-sync만 사용한다.
+- iPhone project를 Xcode 26.6의 `xcodebuild -list`로 열어 `MotionCueSensor`·`MotionCueSensorTests` scheme을 확인했다. 초기 helper 실행은 `autosync(mac): 2026-08-25 10:47 KST` commit을 생성하고 GitHub `main` push까지 성공했다. log는 `~/Library/Logs/MotionCue/git-autosync.log`에 기록된다.
 
 ---
 

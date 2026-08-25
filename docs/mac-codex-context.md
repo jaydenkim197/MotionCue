@@ -76,6 +76,9 @@ connection/permission state, no GPS/Wi-Fi/cloud/storage, and deterministic encod
 Do not modify the Windows UUIDs, 42-byte protocol, or GPS-free privacy boundary.
 Record each material change in docs/development-log.md. Build and test on the physical iPhone
 when Xcode signing is ready; report any hardware/Apple-account blocker instead of inventing a fallback.
+Immediately before the final report for every material Mac Codex task, run
+tools/git-autosync-mac.sh from the repository root. If it reports a paused Git operation or
+conflict, preserve the files, report the log path, and do not force, reset, or auto-resolve it.
 ```
 
 ## Handoff checks
