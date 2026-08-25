@@ -12,15 +12,15 @@ Use anonymous participant codes such as `P01`; never enter a name, email address
 
 ## Conditions
 
-The currently implemented Research Mode exposes the three engineering conditions below. The planned human-subject protocol has since changed to `No Cue / Static Visual Control / Synchronized Cue`; that change is not yet implemented and must not be represented as available software.
+Research Mode implements the three planned human-subject conditions below. These are protocol conditions, not the consumer-facing `Regular` and `Dynamic` appearance controls.
 
 | Condition | Cue behavior |
 |---|---|
 | No Cue | Cues forced Off for the session |
-| Regular | Cues forced On with Regular rendering |
-| Dynamic | Cues forced On with Dynamic rendering |
+| Static Visual Control | Cues visible in the regular appearance, but held at exactly zero offset and zero motion intensity even when phone IMU frames change |
+| Synchronized Cue | Cues forced On with the regular appearance and updated from accepted phone IMU frames |
 
-`Regular` and `Dynamic` currently depend on MotionCue's active motion source. Developer simulation is for engineering QA only. A static dot pattern must not be treated as an efficacy intervention; it will become an explicit `Static Visual Control` after the wireless smartphone sensor bridge is implemented.
+The session requires an active phone IMU stream for the 60-second research protocol. Developer simulation remains engineering QA only. If the live stream becomes unavailable, the common fail-safe behavior turns the cue off rather than retaining a stale visual state.
 
 Research conditions are temporary. A normal stop restores the participant's prior settings. `Emergency stop` and `Ctrl+Shift+F12` immediately end the session and persist Off for safety. Tray and normal Settings changes are ignored while a session is active.
 
@@ -60,8 +60,8 @@ Do not put personally identifying information or precise locations into the free
 | `record_type` | Session, motion, status, FMS, marker, or stop event |
 | `participant_code` | Anonymous research code |
 | `session_id` | Anonymous session code |
-| `protocol_version` | Protocol identifier, initially `MC-PILOT-1` |
-| `condition` | NoCue, Regular, or Dynamic |
+| `protocol_version` | Protocol identifier, currently `MC-PILOT-2` |
+| `condition` | NoCue, StaticVisualControl, or SynchronizedCue |
 | `source_name` | Connected phone name or virtual SensorFrame replay |
 | `source_availability` | Stopped, Discovering, Connecting, Ready, Disconnected, or Faulted |
 | `source_kind` | PhoneImu or Simulation |

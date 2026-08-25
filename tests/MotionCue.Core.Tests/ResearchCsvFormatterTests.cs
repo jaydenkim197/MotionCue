@@ -32,7 +32,7 @@ public sealed class ResearchCsvFormatterTests
     [InlineData("pilot-01", "route_A")]
     public void SessionConfig_AcceptsAnonymousIdentifiers(string participant, string session)
     {
-        var config = new ResearchSessionConfig(participant, session, ResearchCondition.Regular, TimeSpan.FromMinutes(1));
+        var config = new ResearchSessionConfig(participant, session, ResearchCondition.SynchronizedCue, TimeSpan.FromMinutes(1));
         config.Validate();
     }
 
@@ -42,7 +42,7 @@ public sealed class ResearchCsvFormatterTests
     [InlineData("")]
     public void SessionConfig_RejectsNamesAndUnsafeIdentifiers(string participant)
     {
-        var config = new ResearchSessionConfig(participant, "S01", ResearchCondition.Regular, TimeSpan.FromMinutes(1));
+        var config = new ResearchSessionConfig(participant, "S01", ResearchCondition.SynchronizedCue, TimeSpan.FromMinutes(1));
         Assert.Throws<ArgumentException>(config.Validate);
     }
 
@@ -52,8 +52,8 @@ public sealed class ResearchCsvFormatterTests
         ResearchRecordType.MotionState,
         "P01",
         "S01",
-        "MC-PILOT-1",
-        ResearchCondition.Regular,
+        "MC-PILOT-2",
+        ResearchCondition.SynchronizedCue,
         "Developer simulation",
         MotionSourceAvailability.Ready,
         MotionSourceKind.Simulation,

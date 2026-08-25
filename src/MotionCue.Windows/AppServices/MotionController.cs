@@ -24,6 +24,7 @@ public sealed class MotionController : IAsyncDisposable
     private DateTimeOffset _lastFrameAt = DateTimeOffset.MinValue;
     private SensorLinkState _linkState = SensorLinkState.Waiting;
     private AppSettings? _temporarySettingsOriginal;
+    private bool _staticResearchCue;
     private bool _sourceActive;
     private bool _isSimulation;
     private bool _disposed;
@@ -164,7 +165,7 @@ public sealed class MotionController : IAsyncDisposable
         });
     }
 
-    public void BeginTemporarySettings(AppSettings settings)
+    public void BeginTemporarySettings(AppSettings settings, bool staticResearchCue = false)
     {
         ThrowIfDisposed();
         if (HasTemporarySettings)
@@ -172,6 +173,7 @@ public sealed class MotionController : IAsyncDisposable
             throw new InvalidOperationException("Temporary research settings are already active.");
         }
         _temporarySettingsOriginal = Settings;
+        _staticResearchCue = staticResearchCue;
         Settings = settings;
         PublishSettingsAndFrame();
     }
@@ -184,6 +186,7 @@ public sealed class MotionController : IAsyncDisposable
         }
         var restored = _temporarySettingsOriginal;
         _temporarySettingsOriginal = null;
+        _staticResearchCue = false;
         Settings = forceOff ? restored with { Mode = MotionCueMode.Off } : restored;
         if (forceOff)
         {
@@ -387,7 +390,9 @@ public sealed class MotionController : IAsyncDisposable
     private void PublishFrame()
     {
         var effectiveMode = SourceStatus.Availability == MotionSourceAvailability.Ready ? Settings.Mode : MotionCueMode.Off;
-        CurrentFrame = _presentation.CreateFrame(CurrentState, effectiveMode);
+        CurrentFrame = _staticResearchCue && effectiveMode == MotionCueMode.On
+            ? new CueFrame(0, 0, 0, true, CurrentState.Timestamp)
+            : _presentation.CreateFrame(CurrentState, effectiveMode);
         CueFrameChanged?.Invoke(this, CurrentFrame);
     }
 

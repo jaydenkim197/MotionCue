@@ -17,5 +17,15 @@ public sealed class CuePresentationEngine
         var intensity = Math.Clamp(Math.Sqrt((horizontal * horizontal) + (vertical * vertical)), 0, 1);
         return new CueFrame(horizontal, vertical, intensity, visible, state.Timestamp);
     }
-}
 
+    public CueFrame CreateStaticFrame(MotionState state, MotionCueMode mode)
+    {
+        var visible = mode switch
+        {
+            MotionCueMode.On => true,
+            MotionCueMode.Off => false,
+            _ => state.AutomaticCuesActive
+        };
+        return new CueFrame(0, 0, 0, visible, state.Timestamp);
+    }
+}

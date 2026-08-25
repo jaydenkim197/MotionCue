@@ -197,7 +197,7 @@ macOS용 구현은 본 실험 범위에서 제외한다. MacBook Air M1은 Windo
 15. ⬜ iPhone Core Motion + BLE 송신 앱
 16. ⏸️ 로컬 Wi-Fi 보조 전송: BLE 실측이 기준을 충족하지 못할 때만 재개
 17. ⬜ 차량축 교정 UI와 거치 오류 검출
-18. ⬜ `Static Visual Control / Synchronized Cue` Research Mode 조건
+18. ✅ `Static Visual Control / Synchronized Cue` Research Mode 조건
 19. ⬜ 무선 지연·지터·손실·재연결 로그
 20. ⬜ 앱 계층 페어링 인증·암호화
 
@@ -240,7 +240,7 @@ macOS용 구현은 본 실험 범위에서 제외한다. MacBook Air M1은 Windo
 4. iPhone 실기기에서 BLE 지연·손실·재연결·축 방향을 측정한다.
 5. Android IMU 송신 앱을 구현해 Galaxy A50 호환성을 비교한다.
 6. 로컬 Wi-Fi 보조 전송은 BLE 측정이 필요성을 보일 때만 구현한다. 현재 논문 핵심 평가 범위에는 포함하지 않는다.
-7. `No Cue / Static Visual Control / Synchronized Cue` Research Mode를 완성한다.
+7. ✅ `No Cue / Static Visual Control / Synchronized Cue` Research Mode를 구현했다. 차량 파일럿 전 실제 Phone IMU로 세 조건을 QA한다.
 8. Study A의 기준 IMU 동기화 주행을 먼저 수행한다.
 9. 결과를 바탕으로 사용자 실험 자극 세기와 승용차 노선·주행 시간을 확정한다.
 10. 파일럿 6~10명 후 본 실험 30명과 연구계획 사전등록을 진행한다.

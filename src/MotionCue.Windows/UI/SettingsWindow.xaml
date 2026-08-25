@@ -98,10 +98,10 @@
 
           <TextBlock Grid.Row="2" Text="Condition" FontWeight="SemiBold" />
           <TextBlock Grid.Row="2" Grid.Column="2" Text="FMS interval" FontWeight="SemiBold" />
-          <ComboBox x:Name="ResearchConditionCombo" Grid.Row="3" Margin="0,4,0,0" SelectedIndex="1">
+          <ComboBox x:Name="ResearchConditionCombo" Grid.Row="3" Margin="0,4,0,0" SelectedIndex="2">
             <ComboBoxItem Content="No Cue" Tag="NoCue" />
-            <ComboBoxItem Content="Regular" Tag="Regular" />
-            <ComboBoxItem Content="Dynamic" Tag="Dynamic" />
+            <ComboBoxItem Content="Static Visual Control" Tag="StaticVisualControl" />
+            <ComboBoxItem Content="Synchronized Cue" Tag="SynchronizedCue" />
           </ComboBox>
           <ComboBox x:Name="FmsIntervalCombo" Grid.Row="3" Grid.Column="2" Margin="0,4,0,0" SelectedIndex="1">
             <ComboBoxItem Content="10 seconds · QA only" Tag="10" />

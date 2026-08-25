@@ -5,8 +5,8 @@ namespace MotionCue.Research;
 public enum ResearchCondition
 {
     NoCue,
-    Regular,
-    Dynamic
+    StaticVisualControl,
+    SynchronizedCue
 }
 
 public enum ResearchRecordType
@@ -25,7 +25,7 @@ public sealed record ResearchSessionConfig(
     string SessionId,
     ResearchCondition Condition,
     TimeSpan FmsInterval,
-    string ProtocolVersion = "MC-PILOT-1")
+    string ProtocolVersion = "MC-PILOT-2")
 {
     public void Validate()
     {

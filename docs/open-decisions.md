@@ -76,7 +76,7 @@
 3. ✅ 가상 SensorFrame 재생 및 250 ms 중립화·1초 disconnect 검증
 4. iPhone Core Motion/BLE 송신 앱
 5. 실제 iPhone 연결 후 지연·손실 측정
-6. 기존 Research Mode 조건명을 새 연구 조건으로 변경
+6. ✅ Research Mode 조건을 `No Cue / Static Visual Control / Synchronized Cue`로 구현
 
 ## 후속 연구 후보 — 현재 논문 범위 밖
 

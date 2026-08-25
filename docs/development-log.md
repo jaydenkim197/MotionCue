@@ -20,6 +20,24 @@
 
 ---
 
+## 2026-08-25 — 차량 비필수 작업: 연구 조건을 실제 소프트웨어와 정렬
+
+상태: `IMPLEMENTED`; 실제 차량 파일럿 QA는 `PLANNED`
+
+- Research Mode의 기존 공학 QA 조건 `NoCue / Regular / Dynamic`을 논문 프로토콜 조건 `NoCue / StaticVisualControl / SynchronizedCue`로 교체했다. consumer appearance의 `Regular / Dynamic` 설정은 별도로 유지한다.
+- `StaticVisualControl`은 regular appearance의 점을 보이게 하되, Phone IMU 값과 무관하게 `horizontal=0`, `vertical=0`, `intensity=0`으로 고정한다. 따라서 단순 시각 요소의 존재와 실제 운동 동기화 정보를 분리할 수 있다.
+- `SynchronizedCue`는 accepted Phone IMU frame에서 regular appearance의 cue offset을 생성한다. `NoCue`는 cue를 보이지 않게 한다.
+- 공통 fail-safe는 유지된다. Phone stream이 Ready가 아니면 StaticVisualControl도 stale visual을 유지하지 않고 cue를 끈다.
+- CSV protocol version 기본값을 `MC-PILOT-2`로 올렸고 UI condition labels·CSV enum values·연구 문서·테스트를 함께 변경했다.
+- `CuePresentationEngine.CreateStaticFrame`과 unit test를 추가해 static condition이 표시되지만 motion offset·intensity가 0인 것을 보장한다.
+
+남은 차량 비필수 QA:
+
+- live iPhone 연결 상태에서 10초 QA session으로 세 조건의 표시·CSV condition·세션 복구를 검증
+- Mac에서 iPhone BLE peripheral background mode 구현·잠금 화면 연결 유지 실측
+
+---
+
 ## 2026-08-25 — Mac GitHub clone 및 completion-sync 구성
 
 상태: `IMPLEMENTED`, `VERIFIED`

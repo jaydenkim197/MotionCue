@@ -61,12 +61,12 @@ public sealed class ResearchSessionService : IDisposable
         var temporarySettings = config.Condition switch
         {
             ResearchCondition.NoCue => _controller.Settings with { Mode = MotionCueMode.Off, Pattern = CuePattern.Regular },
-            ResearchCondition.Regular => _controller.Settings with { Mode = MotionCueMode.On, Pattern = CuePattern.Regular },
-            ResearchCondition.Dynamic => _controller.Settings with { Mode = MotionCueMode.On, Pattern = CuePattern.Dynamic },
+            ResearchCondition.StaticVisualControl => _controller.Settings with { Mode = MotionCueMode.On, Pattern = CuePattern.Regular },
+            ResearchCondition.SynchronizedCue => _controller.Settings with { Mode = MotionCueMode.On, Pattern = CuePattern.Regular },
             _ => throw new ArgumentOutOfRangeException(nameof(config), config.Condition, null)
         };
 
-        _controller.BeginTemporarySettings(temporarySettings);
+        _controller.BeginTemporarySettings(temporarySettings, config.Condition == ResearchCondition.StaticVisualControl);
         try
         {
             Directory.CreateDirectory(_outputDirectory);
