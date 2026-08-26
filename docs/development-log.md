@@ -20,6 +20,22 @@
 
 ---
 
+## 2026-08-26 — Cross-platform MotionCue design system baseline
+
+상태: `DECISION`, `IMPLEMENTED`
+
+- 제공된 `gradient-ui-ux-elements-collection.zip`의 JPG/EPS/AI reference를 검토해, 부드러운 lavender canvas·white card·diffuse shadow·periwinkle accent의 시각 언어를 MotionCue 전용 규칙으로 정리했다.
+- `docs/design-system.md`를 Windows WPF, iOS SwiftUI, 연구 화면, 향후 문서 screenshot의 단일 디자인 기준으로 추가했다. color/spacing/radius/shadow token, typography, information architecture, component state, status copy, accessibility, asset licensing, review checklist를 포함한다.
+- reference archive는 외부 UI kit이며 runtime asset license가 확인되지 않았으므로 JPG/EPS/AI를 제품에 포함하지 않는다. 현재 Windows 구현과 앞으로의 iOS 구현은 native control/template으로 그 디자인 언어만 재현한다.
+- Windows는 Segoe UI, iOS는 SF Pro를 사용한다. reference가 안내한 Nunito는 별도 font-install dependency를 만들지 않기 위해 채택하지 않았다.
+
+후속:
+
+- iOS companion app의 다음 UI 작업부터 `docs/design-system.md`의 consumer-facing hierarchy와 token을 적용한다.
+- Windows 신규 화면/컨트롤도 동일 문서의 design review checklist를 통과해야 한다.
+
+---
+
 ## 2026-08-26 — Windows Settings UI 간소화 및 통합 디자인 적용
 
 상태: `IMPLEMENTED`, `VERIFIED`
