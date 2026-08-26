@@ -20,6 +20,24 @@
 
 ---
 
+## 2026-08-26 — Windows Settings UI 간소화 및 통합 디자인 적용
+
+상태: `IMPLEMENTED`, `VERIFIED`
+
+- 기존 설정 창은 휴대폰 연결 기능이 Developer Mode 안에 숨겨져 있고, 일상 설정·연구 도구·진단 도구가 동일한 위계로 나열되어 첫 사용자가 필요한 동작을 찾기 어려웠다.
+- 기본 화면을 `Connect your phone` → `Motion cues` → `Visual style`의 세 카드로 재구성했다. BLE 스캔·연결·해제와 현재 센서 상태를 항상 첫 화면에서 확인할 수 있다.
+- 연구 세션은 별도의 접히는 영역으로 이동했고, 가상 SensorFrame 재생·진단 정보는 Developer Mode를 해제했을 때만 나타나는 별도 진단 카드로 분리했다. 연구·진단 기능과 기존 event handler, 세션 안전 정지 기능은 삭제하지 않았다.
+- 밝은 배경, 부드러운 그림자, 보라색 단일 accent, 둥근 카드형 컨트롤을 적용했다. 드롭다운은 Windows 기본 외형 대신 둥근 선택 필드·포커스 링·항목 목록을 사용하고, 체크박스는 선택 시 accent check mark가 보이는 rounded control로 교체했다.
+- 제공된 UI kit archive는 EPS/AI/JPG reference와 Nunito 폰트 안내만 포함한다. 외부 폰트를 설치하거나 자산을 앱에 포함하지 않고, 참고 디자인의 palette·spacing·corner treatment만 WPF native template으로 재구현했다.
+- Release build와 core test 24개를 통과했고, Settings 창에서 기본 상태·custom ComboBox popup·custom CheckBox 렌더링을 실제로 확인했다.
+
+영향 및 후속:
+
+- 기능상 연결 프로토콜, SensorFrame UUID, motion estimator, 연구 CSV 형식은 변경하지 않았다.
+- 새 self-contained Windows artifact를 publish하고 GitHub completion-sync로 Mac clone에 전달한다.
+
+---
+
 ## 2026-08-25 — iPhone BLE Peripheral 백그라운드 연결 지원
 
 상태: `IMPLEMENTED`, 설치본 구성 `VERIFIED`; 잠금 화면 실측은 `PLANNED`
