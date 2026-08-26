@@ -201,6 +201,7 @@ Do not expose BLE PDU size, UUIDs, watchdog status, timestamps, or estimator gai
 - Closed by default unless the user has just started a relevant task.
 - The collapsed title must communicate what is inside (`Research session`, `Diagnostics & test tools`).
 - Never place critical connection recovery controls exclusively inside an expander.
+- Expanding content may increase only the vertical scroll range. It must not resize the application window, change the desktop layout width, or alter the width allocation of neighboring primary cards.
 
 ### 5.9 Overlay cues
 

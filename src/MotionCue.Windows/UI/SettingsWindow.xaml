@@ -8,6 +8,7 @@
     <SolidColorBrush x:Key="Primary" Color="#6670E8" />
     <SolidColorBrush x:Key="PrimarySoft" Color="#EEF0FF" />
     <SolidColorBrush x:Key="MutedText" Color="#737B91" />
+    <SolidColorBrush x:Key="Danger" Color="#B42318" />
     <Style x:Key="Card" TargetType="Border">
       <Setter Property="Background" Value="White"/><Setter Property="CornerRadius" Value="18"/>
       <Setter Property="Padding" Value="22"/><Setter Property="Margin" Value="0,0,0,16"/>
@@ -122,7 +123,8 @@
       </Border>
     </Grid>
 
-    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer x:Name="SettingsScrollViewer" Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <Grid Width="{Binding ViewportWidth, ElementName=SettingsScrollViewer}">
       <Grid Margin="34,0,34,28">
         <Grid.ColumnDefinitions><ColumnDefinition Width="1.65*"/><ColumnDefinition Width="18"/><ColumnDefinition Width="1*" MinWidth="270"/></Grid.ColumnDefinitions>
         <StackPanel>
@@ -143,7 +145,7 @@
               <TextBlock x:Name="PhoneStatusText" Foreground="{StaticResource MutedText}" TextWrapping="Wrap" VerticalAlignment="Center"/>
               <Button x:Name="PhoneDisconnectButton" Grid.Column="1" Content="Disconnect" Style="{StaticResource QuietButton}" Padding="10,6" MinWidth="76" Margin="8,0,0,0" Click="PhoneDisconnect_Click"/>
               <TextBlock x:Name="PhoneInlineAlertText" Grid.Row="1" Grid.ColumnSpan="2" Height="18" Margin="0,4,0,0"
-                         Foreground="{StaticResource danger}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Top"/>
+                         Foreground="{StaticResource Danger}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Top"/>
             </Grid>
           </StackPanel></Border>
 
@@ -207,6 +209,7 @@
             <TextBlock Margin="0,4,0,0" Text="Local processing · no account · no telemetry" Style="{StaticResource Caption}" FontSize="10"/>
           </StackPanel>
         </StackPanel>
+      </Grid>
       </Grid>
     </ScrollViewer>
   </Grid>

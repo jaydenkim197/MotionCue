@@ -20,6 +20,18 @@
 
 ---
 
+## 2026-08-26 — Advanced expander가 기본 카드 폭을 재계산하지 않도록 고정
+
+상태: `IMPLEMENTED`, `VERIFIED`
+
+- `Research session` 또는 `Diagnostics & test tools`를 펼칠 때 ScrollViewer 내부 content Grid가 펼쳐진 자식의 desired width를 기준으로 다시 measure되어, window가 미세하게 가로로 늘어나고 좌측 세 primary card의 폭이 줄어드는 문제가 있었다.
+- Settings ScrollViewer의 `ViewportWidth`를 outer content Grid의 명시적인 width 기준으로 사용하도록 변경했다. 내부 two-column grid는 이제 항상 현재 창의 viewport 폭 안에서만 star column을 계산한다.
+- advanced content를 펼치면 세로 scroll range만 증가하며, connection/motion/style card와 status column의 좌우 폭·window width는 변하지 않는다.
+- 구현 중 inline connection alert가 참조한 WPF `Danger` brush token이 누락된 runtime resource 오류를 발견해 명시적 token으로 추가했다. Release build와 실제 Settings window launch를 다시 확인했다.
+- Research session을 실제로 펼쳐 column width가 유지되는 것을 검수했다. Diagnostics expander도 동일 ScrollViewer/viewport layout을 공유한다.
+
+---
+
 ## 2026-08-26 — iOS 기본 화면 압축 및 세부 설정 분리
 
 상태: `IMPLEMENTED`, 빌드·기기 설치 `VERIFIED`; 사용자 시각 확인 `PLANNED`
@@ -52,6 +64,9 @@
 
 - physical iPhone Debug build가 code signing 및 asset catalog compilation을 포함해 성공했다.
 - 새 `.app`을 연결된 iPhone에 설치하고 launch 명령을 완료했다. 실제 기기에서 card clipping, Dynamic Type 및 상태 전환 시각 검토는 다음 사용자 확인에서 기록한다.
+
+---
+
 ## 2026-08-26 — Phone connection warning을 non-modal inline recovery 안내로 변경
 
 상태: `IMPLEMENTED`, build/test `VERIFIED`
