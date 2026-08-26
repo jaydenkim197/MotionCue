@@ -20,6 +20,23 @@
 
 ---
 
+## 2026-08-26 — iOS MotionCue Sensor 소비자 화면 재설계
+
+상태: `IMPLEMENTED`, 빌드·기기 설치 `VERIFIED`; 시각적 실기기 검토 `PLANNED`
+
+- Windows Settings에 적용된 공통 디자인 시스템을 iOS companion의 첫 화면에 적용했다. 기존 `List` 기반 진단 화면을 lavender canvas, white card, soft shadow, periwinkle accent의 native SwiftUI 화면으로 교체했다.
+- 첫 화면의 우선순위를 `Phone sensor` → `Sending` → `Need to reconnect?`로 재구성했다. 사용자는 Windows 연결 상태, 1초 calibration, advertising 설정과 현재 전송 상태를 진단 값보다 먼저 본다.
+- BLE state, notification timestamp, acceleration, frame count 및 오류는 접힌 `Diagnostics`로 이동했다. 연결된 경우에는 `Windows connected`와 자동 송신 상태를, 미연결인 경우에는 Windows에서 Scan을 누를 구체적인 다음 행동을 표시한다.
+- 공통 token을 iOS `Assets.xcassets`의 named color asset으로 추가했다. 화면의 brand color를 개별 SwiftUI literal이 아닌 `Canvas`, `Surface`, `Accent`, `Text` 등 token으로 사용한다.
+- 전송 protocol, calibration, Motion acquisition, BLE service/UUID, background mode 동작은 변경하지 않았다. asset catalog를 새로 추가하면서 존재하지 않던 `AppIcon` build setting을 제거했다; app icon artwork는 이번 UI scope에 포함하지 않았다.
+
+검증:
+
+- physical iPhone Debug build가 code signing 및 asset catalog compilation을 포함해 성공했다.
+- 새 `.app`을 연결된 iPhone에 설치하고 launch 명령을 완료했다. 실제 기기에서 card clipping, Dynamic Type 및 상태 전환 시각 검토는 다음 사용자 확인에서 기록한다.
+
+---
+
 ## 2026-08-26 — Cross-platform MotionCue design system baseline
 
 상태: `DECISION`, `IMPLEMENTED`
