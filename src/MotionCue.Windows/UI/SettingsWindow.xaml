@@ -137,9 +137,13 @@
               <Button x:Name="PhoneRefreshButton" Grid.Column="1" Content="Scan" Style="{StaticResource QuietButton}" Click="PhoneRefresh_Click"/>
               <Button x:Name="PhoneConnectButton" Grid.Column="2" Content="Connect" Style="{StaticResource PrimaryButton}" Margin="0" Click="PhoneConnect_Click"/>
             </Grid>
-            <Grid Margin="0,13,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <Grid Margin="0,13,0,0">
+              <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="18"/></Grid.RowDefinitions>
+              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
               <TextBlock x:Name="PhoneStatusText" Foreground="{StaticResource MutedText}" TextWrapping="Wrap" VerticalAlignment="Center"/>
               <Button x:Name="PhoneDisconnectButton" Grid.Column="1" Content="Disconnect" Style="{StaticResource QuietButton}" Padding="10,6" MinWidth="76" Margin="8,0,0,0" Click="PhoneDisconnect_Click"/>
+              <TextBlock x:Name="PhoneInlineAlertText" Grid.Row="1" Grid.ColumnSpan="2" Height="18" Margin="0,4,0,0"
+                         Foreground="{StaticResource danger}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Top"/>
             </Grid>
           </StackPanel></Border>
 

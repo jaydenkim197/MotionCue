@@ -52,6 +52,16 @@
 
 - physical iPhone Debug build가 code signing 및 asset catalog compilation을 포함해 성공했다.
 - 새 `.app`을 연결된 iPhone에 설치하고 launch 명령을 완료했다. 실제 기기에서 card clipping, Dynamic Type 및 상태 전환 시각 검토는 다음 사용자 확인에서 기록한다.
+## 2026-08-26 — Phone connection warning을 non-modal inline recovery 안내로 변경
+
+상태: `IMPLEMENTED`, build/test `VERIFIED`
+
+- Phone sensor가 선택되지 않은 상태에서 `Connect`를 누르면 Windows 기본 `MessageBox`가 표시되어, 사용자의 작업 흐름을 막고 새 카드형 UI 언어와도 충돌했다.
+- Phone connection card의 기존 회색 상태 문구 아래에 고정 18 px 높이의 inline alert 영역을 추가했다. 기기 미선택, scan 결과 없음, BLE scan/connect/disconnect 예외는 이제 이 영역에 `danger` 색상의 한 줄 recovery 안내로 표시된다.
+- alert 영역은 항상 공간을 예약하므로 오류가 나타나도 카드 또는 창의 높이·배치가 바뀌지 않는다. 긴 시스템 오류는 한 줄 ellipsis와 tooltip으로 보존한다.
+- 정상 scan/connect 시작 시 이전 alert는 즉시 지워지고, source status는 기존의 중립적인 상태 문구로 계속 표시된다.
+- Research session과 marker 입력처럼 별도 사용자 결정을 요구하는 연구용 modal은 이번 consumer connection UX 변경 범위에서 유지한다.
+- Core test 24개와 Release build를 통과했고 새 self-contained Windows artifact를 publish했다.
 
 ---
 

@@ -28,6 +28,7 @@ public partial class SettingsWindow : Window
     private bool _loading = true;
     private HwndSource? _windowSource;
     private FmsPromptWindow? _fmsPrompt;
+    private string? _phoneInlineAlert;
 
     public SettingsWindow(MotionController controller, ResearchSessionService research)
     {
@@ -154,28 +155,36 @@ public partial class SettingsWindow : Window
 
     private async void PhoneRefresh_Click(object sender, RoutedEventArgs e)
     {
+        var deviceCount = -1;
+        ClearPhoneInlineAlert();
         await RunPhoneActionAsync(async () =>
         {
             PhoneRefreshButton.IsEnabled = false;
             var devices = await _controller.DiscoverPhoneSensorsAsync();
             PhoneDeviceCombo.ItemsSource = devices;
             PhoneDeviceCombo.SelectedIndex = devices.Count > 0 ? 0 : -1;
-        });
+            deviceCount = devices.Count;
+        }, "Couldn’t scan for a phone sensor.");
         PhoneRefreshButton.IsEnabled = !_research.IsActive;
+        if (deviceCount == 0)
+        {
+            ShowPhoneInlineAlert("No MotionCue Sensor found. Keep the iPhone app open, then scan again.");
+        }
     }
 
     private async void PhoneConnect_Click(object sender, RoutedEventArgs e)
     {
         if (PhoneDeviceCombo.SelectedItem is not BleSensorCandidate candidate)
         {
-            System.Windows.MessageBox.Show("Refresh and select a nearby MotionCue sensor first.", "Phone sensor", MessageBoxButton.OK, MessageBoxImage.Information);
+            ShowPhoneInlineAlert("Scan first, then select your nearby MotionCue Sensor.");
             return;
         }
-        await RunPhoneActionAsync(() => _controller.ConnectPhoneAsync(candidate));
+        ClearPhoneInlineAlert();
+        await RunPhoneActionAsync(() => _controller.ConnectPhoneAsync(candidate), "Couldn’t connect to the phone sensor.");
     }
 
     private async void PhoneDisconnect_Click(object sender, RoutedEventArgs e) =>
-        await RunPhoneActionAsync(_controller.DisconnectPhoneAsync);
+        await RunPhoneActionAsync(_controller.DisconnectPhoneAsync, "Couldn’t disconnect from the phone sensor.");
 
     private void StartResearch_Click(object sender, RoutedEventArgs e)
     {
@@ -302,6 +311,8 @@ public partial class SettingsWindow : Window
                 ? $"Phone sensor connected · {_controller.ActiveSourceName}"
                 : $"Phone sensor unavailable · {_controller.SourceStatus.Message}";
         PhoneStatusText.Text = _controller.SourceStatus.Message;
+        PhoneInlineAlertText.Text = _phoneInlineAlert ?? string.Empty;
+        PhoneInlineAlertText.ToolTip = _phoneInlineAlert;
         DiagnosticsText.Text = _controller.BuildDiagnosticsText();
     }
 
@@ -360,7 +371,7 @@ public partial class SettingsWindow : Window
         RefreshResearchUi();
     }
 
-    private static async Task RunPhoneActionAsync(Func<Task> action)
+    private async Task RunPhoneActionAsync(Func<Task> action, string failurePrefix)
     {
         try
         {
@@ -368,8 +379,22 @@ public partial class SettingsWindow : Window
         }
         catch (Exception ex) when (ex is InvalidOperationException or UnauthorizedAccessException or COMException)
         {
-            System.Windows.MessageBox.Show(ex.Message, "Phone sensor", MessageBoxButton.OK, MessageBoxImage.Warning);
+            ShowPhoneInlineAlert($"{failurePrefix} {ex.Message}");
         }
+    }
+
+    private void ShowPhoneInlineAlert(string message)
+    {
+        _phoneInlineAlert = message;
+        PhoneInlineAlertText.Text = message;
+        PhoneInlineAlertText.ToolTip = message;
+    }
+
+    private void ClearPhoneInlineAlert()
+    {
+        _phoneInlineAlert = null;
+        PhoneInlineAlertText.Text = string.Empty;
+        PhoneInlineAlertText.ToolTip = null;
     }
 
     private void OnSourceInitialized(object? sender, EventArgs e)
