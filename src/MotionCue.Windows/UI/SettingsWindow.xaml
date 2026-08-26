@@ -39,6 +39,10 @@
     <Style x:Key="QuietButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
       <Setter Property="Background" Value="#F0F2F8"/><Setter Property="Foreground" Value="#394158"/><Setter Property="BorderThickness" Value="0"/>
     </Style>
+    <Style x:Key="DiagnosticButton" TargetType="Button" BasedOn="{StaticResource QuietButton}">
+      <Setter Property="MinWidth" Value="0"/><Setter Property="Margin" Value="0"/>
+      <Setter Property="Padding" Value="12,10"/>
+    </Style>
     <Style x:Key="SegmentRadio" TargetType="RadioButton">
       <Setter Property="Foreground" Value="#4E566C"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Margin" Value="0,0,8,0"/><Setter Property="Cursor" Value="Hand"/>
       <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="RadioButton">
@@ -200,8 +204,20 @@
           <Border x:Name="DeveloperPanel" Visibility="Collapsed" Style="{StaticResource Card}"><StackPanel>
             <Expander Header="Diagnostics &amp; test tools"><StackPanel Margin="0,14,0,0">
               <TextBlock Text="Virtual SensorFrame replay" Style="{StaticResource Caption}" Margin="0,0,0,8"/>
-              <WrapPanel x:Name="SimulationControls"><Button Content="Full demo" Tag="FullDemo" Style="{StaticResource QuietButton}" Click="PhoneSimulation_Click"/><Button Content="Accelerate" Tag="Accelerate" Style="{StaticResource QuietButton}" Click="PhoneSimulation_Click"/><Button Content="Brake" Tag="Brake" Style="{StaticResource QuietButton}" Click="PhoneSimulation_Click"/><Button Content="Turn left" Tag="TurnLeft" Style="{StaticResource QuietButton}" Click="PhoneSimulation_Click"/><Button Content="Turn right" Tag="TurnRight" Style="{StaticResource QuietButton}" Click="PhoneSimulation_Click"/><Button Content="Neutral" Tag="Neutral" Style="{StaticResource QuietButton}" Click="PhoneSimulation_Click"/><Button Content="Dropout" Tag="Dropout" Style="{StaticResource QuietButton}" Click="PhoneSimulation_Click"/></WrapPanel>
-              <TextBox x:Name="DiagnosticsText" Margin="0,10,0,0" Padding="10" Height="220" IsReadOnly="True" FontFamily="Consolas" FontSize="11" VerticalScrollBarVisibility="Auto" TextWrapping="NoWrap" Background="#F7F8FB"/>
+              <Grid x:Name="SimulationControls">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="10"/><RowDefinition Height="Auto"/><RowDefinition Height="10"/><RowDefinition Height="Auto"/><RowDefinition Height="10"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                <Button Content="Full demo" Tag="FullDemo" Style="{StaticResource DiagnosticButton}" Click="PhoneSimulation_Click"/>
+                <Button Grid.Column="2" Content="Accelerate" Tag="Accelerate" Style="{StaticResource DiagnosticButton}" Click="PhoneSimulation_Click"/>
+                <Button Grid.Row="2" Content="Brake" Tag="Brake" Style="{StaticResource DiagnosticButton}" Click="PhoneSimulation_Click"/>
+                <Button Grid.Row="2" Grid.Column="2" Content="Turn left" Tag="TurnLeft" Style="{StaticResource DiagnosticButton}" Click="PhoneSimulation_Click"/>
+                <Button Grid.Row="4" Content="Turn right" Tag="TurnRight" Style="{StaticResource DiagnosticButton}" Click="PhoneSimulation_Click"/>
+                <Button Grid.Row="4" Grid.Column="2" Content="Neutral" Tag="Neutral" Style="{StaticResource DiagnosticButton}" Click="PhoneSimulation_Click"/>
+                <Button Grid.Row="6" Grid.ColumnSpan="3" Content="Dropout" Tag="Dropout" Style="{StaticResource DiagnosticButton}" Click="PhoneSimulation_Click"/>
+              </Grid>
+              <TextBox x:Name="DiagnosticsText" Margin="0,14,0,0" Padding="10" IsReadOnly="True" AcceptsReturn="True"
+                       FontFamily="Consolas" FontSize="11" TextWrapping="Wrap" VerticalScrollBarVisibility="Disabled"
+                       HorizontalScrollBarVisibility="Disabled" Background="#F7F8FB"/>
             </StackPanel></Expander>
           </StackPanel></Border>
           <StackPanel Margin="5,0,5,18">

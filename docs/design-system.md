@@ -202,6 +202,8 @@ Do not expose BLE PDU size, UUIDs, watchdog status, timestamps, or estimator gai
 - The collapsed title must communicate what is inside (`Research session`, `Diagnostics & test tools`).
 - Never place critical connection recovery controls exclusively inside an expander.
 - Expanding content may increase only the vertical scroll range. It must not resize the application window, change the desktop layout width, or alter the width allocation of neighboring primary cards.
+- Diagnostic action groups use an explicit balanced grid with visible row and column gaps; do not rely on an unconstrained wrap flow for a fixed command set.
+- Read-only diagnostic output expands to its content and wraps long lines. Avoid a nested fixed-height text box or an inner scrollbar; the surrounding advanced surface owns overflow behavior.
 
 ### 5.9 Overlay cues
 

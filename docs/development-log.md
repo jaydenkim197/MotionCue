@@ -20,6 +20,17 @@
 
 ---
 
+## 2026-08-26 — Diagnostics replay controls와 output 영역의 균형 재정렬
+
+상태: `IMPLEMENTED`, `VERIFIED`
+
+- Virtual SensorFrame replay 버튼이 `WrapPanel`의 기본 흐름에 의존해 줄 간 세로 간격이 없고, 마지막 `Dropout` 버튼이 불균형하게 남았다.
+- replay controls를 2열 고정 Grid로 변경해 모든 버튼에 10 px 간격을 적용했다. `Full demo / Accelerate`, `Brake / Turn left`, `Turn right / Neutral`을 균등 배치하고 `Dropout`은 마지막 행 전체 폭을 사용한다.
+- Diagnostics output의 고정 220 px height와 내부 vertical scrollbar를 제거했다. output은 read-only multiline text가 wrapping된 줄 수만큼 자동으로 높이를 확보하고, 내부 scrollbar 없이 전체 내용을 표시한다.
+- 실제 Settings 창에서 Developer Diagnostics를 펼쳐 control spacing과 자동 확장 output을 확인했다.
+
+---
+
 ## 2026-08-26 — Advanced expander가 기본 카드 폭을 재계산하지 않도록 고정
 
 상태: `IMPLEMENTED`, `VERIFIED`
