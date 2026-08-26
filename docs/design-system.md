@@ -117,6 +117,13 @@ The Scan and Connect controls are necessary for setup and recovery, but should n
 
 ## 5. Component specifications
 
+### 5.0 Compact consumer UI rule
+
+- Do not enlarge ordinary status copy into child-oriented or senior-mode presentation. Use normal platform text sizes and reserve large type for the product title only.
+- The default screen shows only the current state and the single next action. Connection switches, background notes, raw counters, and diagnostics belong in a clearly accessible detail view.
+- Short text placed inside a pill, button, metric tile, or compact card row must remain on one line. Shorten the label first; if space is still limited, use modest scaling or truncation rather than an awkward line break inside the shape.
+- Explanatory paragraphs must not be placed inside several competing cards on the default screen. Keep detailed explanations in the detail view where they can use full-width rows with clear hierarchy.
+
 ### 5.1 App header
 
 - 46 px rounded-square product mark with `accent` fill and a white `M`.
@@ -262,4 +269,3 @@ Before considering a UI task complete, verify:
 - [ ] Keyboard navigation/focus is intact on Windows; Dynamic Type/VoiceOver are considered on iOS.
 - [ ] The screen is tested at its expected window/device size and no card or popup is clipped.
 - [ ] The change and its verification result are recorded in `docs/development-log.md`.
-

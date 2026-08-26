@@ -20,6 +20,24 @@
 
 ---
 
+## 2026-08-26 — iOS 기본 화면 압축 및 세부 설정 분리
+
+상태: `IMPLEMENTED`, 빌드·기기 설치 `VERIFIED`; 사용자 시각 확인 `PLANNED`
+
+- 실기기 screenshot 검토에서 `Waiting`, `Waiting for Windows`, `Ready to send`가 반복되고 연결·전송·재연결 설명이 각각 큰 카드로 노출되어 정보량과 글자 크기가 과도한 것을 확인했다.
+- 기본 화면을 `MotionCue` header와 단일 상태/calibration card만 남기도록 압축했다. 연결 상태는 한 줄 제목과 한 줄 다음 행동으로 표시하며, calibration은 같은 카드의 짧은 행으로 유지한다.
+- Advertising toggle, 잠금 화면 안내, Bluetooth/app 상태, 전송률, frame 수, 마지막 송신과 acceleration은 우측 상단 gear 버튼의 `Details` sheet로 이동했다.
+- pill, button, compact card title/value에는 한 줄 제한과 필요한 경우의 최소 축소율을 적용했다. 짧은 단어가 박스 내부에서 어색하게 줄바꿈되지 않도록 metric tile 형식도 제거했다.
+- 이 원칙을 `docs/design-system.md`의 `Compact consumer UI rule`로 추가해 이후 Windows/iOS 작업에도 적용한다.
+- BLE protocol, calibration algorithm, sensor acquisition, background entitlement 및 송신 로직은 변경하지 않았다.
+
+검증:
+
+- physical iPhone Debug build와 code-sign verification을 통과했다.
+- 새 build를 연결된 iPhone에 설치하고 실행했다.
+
+---
+
 ## 2026-08-26 — iOS MotionCue Sensor 소비자 화면 재설계
 
 상태: `IMPLEMENTED`, 빌드·기기 설치 `VERIFIED`; 시각적 실기기 검토 `PLANNED`
