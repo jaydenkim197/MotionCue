@@ -20,6 +20,16 @@
 
 ---
 
+## 2026-08-29 — Reusable GitHub completion-sync 문서화
+
+상태: `IMPLEMENTED`
+
+- 현재 Windows와 Mac workspace에서 사용하는 GitHub-only completion-sync 방식을 다른 프로젝트에도 적용할 수 있도록 `docs/reusable-github-completion-sync.md`를 추가했다.
+- 문서는 실제 MotionCue 배포 정보, 사용 조건, non-goals, 초기 clone/publication, Windows·macOS helper 알고리즘, exit code, daily handoff, conflict recovery, `.gitignore`/`.gitattributes` 조건 및 재사용 checklist를 포함한다.
+- 이 방식은 background watcher나 cloud filesystem sync를 대체하는 순차 작업용 Git workflow이며, simultaneous editing 또는 automatic conflict resolution을 제공하지 않는다는 한계를 명시했다.
+
+---
+
 ## 2026-08-26 — Diagnostics replay controls와 output 영역의 균형 재정렬
 
 상태: `IMPLEMENTED`, `VERIFIED`
