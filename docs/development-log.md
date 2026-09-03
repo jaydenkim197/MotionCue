@@ -20,6 +20,21 @@
 
 ---
 
+## 2026-09-03 — AI/CV 개발 후보 평가 및 1~2학기 실행안 문서화
+
+상태: `PROPOSAL`, 문서 `IMPLEMENTED`
+
+- GPT 대화에서 제안된 gaze, 개인화, 얼굴 행동, webcam rPPG, cue parameter 최적화, task recognition, saliency, 자동 교정, 차량 연동 및 wearable 방향을 현재 MotionCue의 장비·예산·표본·기간 조건으로 다시 비교했다.
+- 가장 현실적인 2학기 방향으로 사전학습된 얼굴·눈 특징 모델을 이용한 `Attention-Aware Adaptive MotionCue`를 제안했다. 정밀 gaze 좌표나 멀미 진단 대신 좌·중앙·우·화면 이탈 수준의 시각 주의 상태를 로컬에서 추정하고, cue의 모션 방향·타이밍은 유지한 채 가장자리별 salience만 설명 가능한 고정 정책으로 조절한다.
+- 30명 규모 자료로 딥러닝 멀미 예측이나 온라인 개인화를 학습하는 안은 데이터 부족과 누수·과적합 위험 때문에 본 학부논문 범위에서 제외했다. 개인화, 얼굴 기반 불편 추정, rPPG, saliency 및 task recognition은 후속 연구로 분리했다.
+- 1학기 축소안은 기존 `No Cue / Static Visual Control / Synchronized Cue` 효과 연구를 완성하면서 카메라 정보를 탐색적 관찰 지표로만 기록한다. 2학기 권장안은 기술 검증과 파일럿 뒤 `No Cue / Fixed Synchronized / Attention-Adaptive Synchronized` 3조건을 사용해 현재 3회 방문·최대 900,000 KRW 사례비 구조를 유지한다.
+- 카메라 추가는 연구 승인과 프라이버시 부담을 높이므로 심의 상태는 계속 `TBD`로 두되, 모집 전에 적용 절차를 확인한다. 원본 얼굴 영상·얼굴 embedding·화면 캡처는 저장하지 않고 파생 attention state만 기록하는 것을 기본 경계로 정했다.
+- 상세 후보 비교, architecture, RQ, 실험 선택지, 학기별 일정, 중단 기준 및 차량 없이 바로 할 수 있는 작업을 `docs/adaptive-motioncue-development-roadmap.md`에 기록했다.
+- 이 항목은 추천안이며 기존 연구 조건을 즉시 대체한 확정 결정은 아니다. 지도교수 협의와 기술 스파이크 뒤 별도 결정 로그에서 확정한다.
+- README의 오래된 상태 설명을 실제 iPhone-to-Windows BLE 검증 결과와 현재 Research Mode 조건에 맞게 갱신하고 새 로드맵을 연결했다.
+
+---
+
 ## 2026-08-29 — Reusable GitHub completion-sync 문서화
 
 상태: `IMPLEMENTED`

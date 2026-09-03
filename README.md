@@ -6,6 +6,8 @@ The complete product, engineering, research, and validation history is maintaine
 
 Pending decisions and their recommended defaults are tracked in [Open Decisions](docs/open-decisions.md).
 
+The proposed AI/CV extension and its one- or two-semester scope are documented in [Adaptive MotionCue development roadmap](docs/adaptive-motioncue-development-roadmap.md). It is a proposal and does not replace the current study protocol until explicitly approved.
+
 The coordinate-free phone protocol is specified in [SensorFrame v1](docs/sensorframe-v1.md). The English ICCV-style thesis source is under [paper](paper/README.md), with the current rendered draft at [MotionCue thesis draft](output/pdf/MotionCue_thesis_draft.pdf).
 
 The next implementation boundary—iPhone Core Motion acquisition, vehicle-axis calibration, and BLE Peripheral transmission—is defined in [iOS transmitter implementation specification](docs/ios-transmitter-implementation-spec.md). For moving work to the Mac, use [Mac Codex context package](docs/mac-codex-context.md).
@@ -14,13 +16,13 @@ The next implementation boundary—iPhone Core Motion acquisition, vehicle-axis 
 
 ## Current status
 
-The Windows Phone IMU engineering path is implemented: SensorFrame v1 decoding, nearby-service discovery, BLE/GATT subscription, vehicle-axis cue estimation, fail-safe neutralization, transparent click-through overlay, tray modes, research instrumentation, and deterministic SensorFrame replay. The native iPhone and Android transmitter apps and real-device Study A measurements remain incomplete.
+The Windows Phone IMU engineering path is implemented: SensorFrame v1 decoding, nearby-service discovery, BLE/GATT subscription, vehicle-axis cue estimation, fail-safe neutralization, transparent click-through overlay, tray modes, research instrumentation, and deterministic SensorFrame replay. The native iPhone transmitter is also implemented and its live BLE discovery, connection, subscription, and approximately 25 Hz SensorFrame transfer to Windows have been verified. Android transmission and quantitative in-vehicle Study A measurements remain incomplete.
 
 ## Requirements
 
 - Windows 11 x64 recommended; Windows 10 19041+ is a compatibility target.
 - .NET 8 SDK for building.
-- A nearby iPhone or Android phone running the future MotionCue companion for live motion cues.
+- A nearby iPhone running the MotionCue Sensor companion, or a future compatible Android companion, for live motion cues.
 - Bluetooth Low Energy enabled on Windows.
 
 The current Windows build does not request location permission or use GNSS/GPS. Developer SensorFrame replay remains available without a phone or physical movement.
@@ -45,9 +47,9 @@ The repository contains a project-local SDK in `.tools/dotnet8` for this workspa
 .\.tools\dotnet8\dotnet.exe run --project src\MotionCue.Windows
 ```
 
-The app starts in the tray. On first run it explains the phone BLE sensor requirement and local processing. Use the tray menu for Automatic, On, Off, Settings, and Quit. In Settings, click the version five times to reveal phone connection controls, diagnostics, and virtual SensorFrame replay.
+The app starts in the tray. On first run it explains the phone BLE sensor requirement and local processing. Use the tray menu for Automatic, On, Off, Settings, and Quit. Phone connection controls are on the main Settings surface. Click the version five times to reveal diagnostics and virtual SensorFrame replay.
 
-The same hidden panel includes a pilot Research Mode with anonymous session IDs, No Cue/Regular/Dynamic conditions, timed FMS prompts, event markers, an emergency stop hotkey, and opt-in CSV logging that structurally excludes latitude and longitude. See [Research Mode](docs/research-mode.md).
+Settings includes a pilot Research Mode with anonymous session IDs, No Cue/Static Visual Control/Synchronized Cue conditions, timed FMS prompts, event markers, an emergency stop hotkey, and opt-in CSV logging that structurally excludes latitude and longitude. See [Research Mode](docs/research-mode.md).
 
 ## Publish a portable Windows build
 
@@ -60,7 +62,8 @@ The self-contained output does not require a separate .NET installation. Run `ar
 ## Limitations
 
 - Primary display only.
-- The native iPhone and Android companion transmitters are not implemented yet.
+- The Android companion transmitter is not implemented yet.
+- The iPhone transmitter is implemented, but lock/background behavior and quantitative vehicle timing still require physical validation.
 - Phone mounting and vehicle-axis calibration require physical validation.
 - Actual usefulness, cue timing, and distraction require physical field tests.
 - BLE timing and reconnection vary by phone and Windows Bluetooth hardware.
