@@ -8,6 +8,8 @@ Pending decisions and their recommended defaults are tracked in [Open Decisions]
 
 The proposed AI/CV extension and its one- or two-semester scope are documented in [Adaptive MotionCue development roadmap](docs/adaptive-motioncue-development-roadmap.md). It is a proposal and does not replace the current study protocol until explicitly approved.
 
+The reusable [Development documentation skillbook](docs/reusable-development-documentation-skillbook.md) captures the decision logging, verification, documentation, and completion-sync practices used in this project for reuse elsewhere.
+
 The coordinate-free phone protocol is specified in [SensorFrame v1](docs/sensorframe-v1.md). The English ICCV-style thesis source is under [paper](paper/README.md), with the current rendered draft at [MotionCue thesis draft](output/pdf/MotionCue_thesis_draft.pdf).
 
 The next implementation boundary—iPhone Core Motion acquisition, vehicle-axis calibration, and BLE Peripheral transmission—is defined in [iOS transmitter implementation specification](docs/ios-transmitter-implementation-spec.md). For moving work to the Mac, use [Mac Codex context package](docs/mac-codex-context.md).

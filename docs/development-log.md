@@ -14,9 +14,27 @@
 
 - `IMPLEMENTED`: 코드나 문서에 반영됨
 - `VERIFIED`: 테스트 또는 실제 UI에서 확인됨
+- `PROPOSAL`: 검토 중인 추천안이며 아직 확정되지 않음
 - `DECISION`: 제품·연구 방향으로 확정됨
 - `PLANNED`: 확정됐지만 아직 구현되지 않음
+- `BLOCKED`: 외부 정보·권한·장비 등으로 진행할 수 없음
+- `DEFERRED`: 의도적으로 후순위로 이동함
 - `SUPERSEDED`: 이후 결정으로 대체됨
+
+---
+
+## 2026-09-04 — 재사용 가능한 개발 문서화 스킬북 정리
+
+상태: `IMPLEMENTED`
+
+- MotionCue에서 사용한 development log, open decision register, architecture/data contract, verification matrix, release runbook, 디자인·연구 문서, Git completion-sync 규칙을 일반 프로젝트에 재사용할 수 있는 markdown 스킬북으로 정리했다.
+- 스킬북은 기록 대상과 제외 대상, 통일된 상태 언어, 작업 시작·종료 루틴, 문서별 책임, 복사 가능한 template, 연구/AI 데이터 경계, 여러 컴퓨터의 Git 운영, Codex material-change completion protocol 및 최소 도입안을 포함한다.
+- 기존 로그에서 실제로 사용하던 `PROPOSAL`, `BLOCKED`, `DEFERRED` 상태를 상태 표기에 추가해 문서와 운영 언어의 불일치를 해소했다.
+- README에서 새 스킬북을 연결했다.
+
+문서:
+
+- `docs/reusable-development-documentation-skillbook.md`
 
 ---
 
