@@ -23,6 +23,16 @@
 
 ---
 
+## 2026-09-05 — SF Symbols 아이콘 디자인 환경 및 MotionCue 아이콘 레퍼런스
+
+상태: `IMPLEMENTED`; 최종 아이콘 선택은 `PLANNED`
+
+- Apple Software 서명이 검증된 SF Symbols 8 패키지를 Mac 개발 환경에 설치했다. iOS UI의 SF Symbol 탐색·비교·내보내기에 사용한다.
+- MotionCue의 iPhone 앱과 Windows 프로그램에서 공통으로 사용할 수 있는 독자적 아이콘 방향 4가지를 레퍼런스 시트로 생성했다. 외부 아이콘 asset을 제품에 포함하지 않았으며, 최종 아이콘은 선택된 방향을 바탕으로 별도 제작한다.
+- 후보는 white waveform, gyroscope, phone/radio wave, edge-dot motion path다. 앱의 핵심이 차량 관리가 아니라 스마트폰 IMU 기반 motion cue임을 반영해 차량 실루엣보다 waveform 또는 motion path를 우선 후보로 둔다.
+
+---
+
 ## 2026-09-04 — 재사용 가능한 개발 문서화 스킬북 정리
 
 상태: `IMPLEMENTED`
