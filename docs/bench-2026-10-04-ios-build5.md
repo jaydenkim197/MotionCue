@@ -68,4 +68,21 @@ Build4 background 표본의 약8.45 Hz에 비해 새 후보의 이번 background
 2. 45,000 fresh enqueue 목표/35분 hard limit, Stop/OS cancellation 및 foreground 재시작 검증. 자동 재시작 없음.
 3. Windows 수신 간격/전환 gap, 30분 foreground/10회 재연결 등 G1 잔여 조건 확인 후 지연·필터 튜닝 판단.
 
+### Windows 후속 관찰 — 23:40–23:41 KST
+
+Windows에서 GitHub `18383f6`까지 pull했다. 새 변경은 iOS 코드와 문서이며 Windows 코드는 바뀌지 않았다. Mac 시험 기록은 검토했지만 ignored iPhone 원본 JSONL은 이 복사본에 없어 재계산하지 않았다. 아래는 Windows에서 직접 읽은 별도의 수신 관찰이다.
+
+| 수신 시각 (KST) | accepted / missing / rejected | p50 / p95 (ms) | 누적 max / 최근 jitter SD (ms) |
+|---|---|---|---|
+| 23:40:23.1559546 | 38368 / 45 / 0 | 58.1 / 60.9 | 2435.1 / 37.3 |
+| 23:41:44.5114607 | 40396 / 45 / 0 | 58.0 / 60.7 | 2435.1 / 27.8 |
+
+- **81.3555061 s / +2028 accepted = 약 24.9276 Hz**, 추가 missing/rejected **0/0**. 시작·끝 모두 Ready / Subscribed / Streaming / cue visible / sample interval 40 ms였다. 전체 세션 또는 모든 중간 watchdog 상태를 입증하는 per-frame trace는 아니다.
+- 누적 sequence gap은 0.12%→0.11%로 표시됐다. Missing 45와 max 2435.1 ms는 시작 전부터 있던 값이다. 이 구간에서 max가 증가하지 않았지만, 더 짧은 새 공백이 없었다거나 기존 2.44초 공백의 원인이 잠금 전환이었다고 단정할 수 없다.
+- BLE notification callback의 수신 간격은 monotonic clock으로 기록된다. Sample timestamp는 Windows 수신 UTC 시각이다. 25 Hz 처리량과 p50 약 58 ms가 함께 관찰됐으며 batching 등의 원인과 입력→화면의 실제 지연은 분리 측정 전이다. 0.20 s smoothing은 유지했다.
+- iPhone의 현재 물리 화면·Locked session 상태는 Windows만으로 확인 불가하다. 이 후속 81초를 독립적인 USB 없는 잠금 trial이나 30분 완료 시험으로 집계하지 않는다.
+- 실행 파일은 `artifacts/MotionCue-win-x64/MotionCue.Windows.exe`. SHA256은 manifest와 같은 `1CAD098FACA729E7BBB3B5F5B4B6EC77E3C65D5D8E2898896B9CD75CE9817338`이다. Manifest source는 `8766ff0b399589d5dbd1f7f11e38391f5d6a61af`, `WorktreeDirty=true`, build UTC `2026-10-04T09:44:27.9191777Z`, `RuntimeValidated=false`다. clean `18383f6` 빌드라는 주장은 하지 않는다. 현재 스트림을 보존해 재빌드·재실행·재연결하지 않았다. 다음 통제된 trial 전에 clean revision으로 재빌드한다.
+
+다음은 iPhone Details의 **Locked session state / Frames / elapsed**와 Mac runtime 종료 로그를 대조하여 45,000-frame 완료 또는 종료 이유를 확인하는 것이다. Windows 누적 accepted와 iPhone 작업 Frames는 계수 범위가 다르다. 이후 새 세션 반복 잠금·Stop·OS 취소와 지연 분리 측정을 수행한다.
+
 변경·검증은 [개발 로그](development-log.md), 공통 gate는 [준비 기준](pre-field-test-readiness.md), 물리 절차는 [잠금 시험 안내](bench-ios-build4-lock-session.md)에 기록한다.

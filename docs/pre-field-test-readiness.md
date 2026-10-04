@@ -29,6 +29,8 @@ Windows 실측 갱신(21:15–21:17 KST): foreground 약 47.3초에서 accepted 
 - 보류: AI/CV, Android, Wi-Fi, GPS, 앱 계층 인증, public distribution. Android 호환성은 별도 Study A 과제다.
 - 지연: 기존 0.20 s filter 유지. 통신과 화면 지연을 분리 측정한 뒤 로그/재검증과 함께 튜닝한다.
 
+현재 후속 확인(23:44 KST): Mac build 5의 8분 background summary는 481.2813 s/+11996 enqueue/**24.92513 Hz**였다. Windows에서 `18383f6` pull 후 직접 읽은 별도 81.3555061 s는 +2028 accepted/**24.9276 Hz**, 추가 missing/rejected 0/0, 시작·끝 Streaming이다. 마지막 p50/p95는 58.0/60.7 ms로 임시 median gate는 아직 미충족이다. 누적 max 2435.1 ms는 측정 시작 전부터 있어 발생 시각·원인 불명이다. 현재 iPhone 화면/세션 상태와 45,000-frame 완료는 미확인이다. 실행 EXE manifest는 이전 revision/dirty 상태이므로 다음 통제 trial 전에 clean build가 필요하다. 진행 중 연결은 보존했다. [상세 기록](bench-2026-10-04-ios-build5.md).
+
 ## Gates
 
 | 단계 | 필요한 완성도 | 현재 판단 |

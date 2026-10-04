@@ -23,6 +23,19 @@
 
 ---
 
+## 2026-10-04 23:44 KST — Mac build 5 검토 및 Windows 실제 수신 후속 확인
+
+상태: GitHub `18383f6` pull·변경 검토 `VERIFIED`; Windows 약 81초 nominal 25 Hz 수신 `HARDWARE-VERIFIED`; 세션 완료·반복/취소·실제 end-to-end 지연은 미검증.
+
+- 유한 `LockedSensorSession`과 Core Motion sample-driven 25 Hz cadence를 검토했다. 45,000 fresh enqueue 목표/35분 hard limit, 자동 연장 없음, 신선도·보정·구독 guard를 확인했다. Mac 5분/8분 결과는 bench 문서로 검토했으며 ignored iPhone JSONL을 Windows에서 재계산한 것으로 주장하지 않는다. 이전 build 3의 잠금 중단 기록은 보존한다.
+- Windows 23:40:23.1559546→23:41:44.5114607, accepted 38368→40396: **81.3555061 s / +2028 = 약 24.9276 Hz**, missing 45→45/rejected 0→0, 양쪽 Ready/Subscribed/Streaming/cue visible. p50/p95 58.1/60.9→58.0/60.7 ms. 누적 max 2435.1 ms는 시작 전부터 있어 원인·발생 시각을 이번 관찰로 단정하지 않는다.
+- iPhone 물리 화면·현재 세션 상태는 Windows로 확인 불가하므로 이 81초를 새 잠금 trial/30분 완료로 집계하지 않았다. BLE 수신 간격은 end-to-end latency가 아니며 0.20 s smoothing은 변경하지 않았다. 상세 수치·한계를 `docs/bench-2026-10-04-ios-build5.md`에 추가하고 readiness를 갱신했다.
+- EXE SHA256과 기존 manifest는 일치한다. 다만 manifest source `8766ff0`, `WorktreeDirty=true`이므로 clean 최신 commit 빌드라고 주장하지 않는다. 새 Windows 코드 변경은 없고 진행 중 스트림 보존을 위해 재빌드/재실행/재연결하지 않았다. 다음 통제된 trial 전 clean release build가 필요하다.
+- 다음 확인: iPhone Frames/elapsed/state와 Mac 종료 로그 대조 → 45,000-frame 완료/35분 한계·Stop/OS 취소 → 새 세션 잠금 반복 → 수신·화면 지연 분리. 앱/프로토콜/필터 코드는 변경하지 않았다.
+- 문서만 명시적으로 stage/commit/push한다. 사용자 untracked `MotionQue_theme_standard.zip`과 ignored artifacts는 보존하고 업로드하지 않는다.
+
+---
+
 ## 2026-10-04 23:24 KST — build 5 USB 없는 5분 이상 잠금 송신 지속 확인
 
 상태: 한 번의 연속 잠금 구간에서5분 이상 nominal25 Hz 송신 지속 `VERIFIED`; 전체 유한 세션/종료·취소/반복 및 G1 전체 미완료.
