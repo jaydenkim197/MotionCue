@@ -23,6 +23,19 @@
 
 ---
 
+## 2026-10-04 — Windows 0.2.0 재빌드 및 iPhone BLE 구독 확인
+
+상태: Release/test/앱 실행/BLE 구독 `VERIFIED`; 센서 수신 및 G1 bench 미검증
+
+- GitHub `main`을 fast-forward pull해 Mac의 4개 신규 commit과 source `c66c9b8`을 반영했다. 사용자 로컬 `MotionQue_theme_standard.zip`은 보존하고 업로드하지 않았다.
+- Windows에서 `tools/build-windows-release.ps1`을 실제 실행했다. Core Release tests **30/30 통과**, win-x64 self-contained single-file publish 성공을 확인했다.
+- build manifest: version `0.2.0`, source revision `c66c9b899eb1f2349a7b22529b516206f02f524b`, BuiltAtUtc `2026-10-04T09:34:11.2646965Z`, SHA256 `09C253CDCD5FF5CA07FA878CFABAF0BEDF4258629BFB8E66E2D607F056769C72`. `WorktreeDirty=true`는 빌드 당시 유일한 미추적 디자인 ZIP 때문이며 tracked source 변경은 없었다. `RuntimeValidated=false`를 유지한다.
+- 새 `artifacts/MotionCue-win-x64/MotionCue.Windows.exe --settings`를 실행하고 UI의 `MotionCue 0.2.0 · pilot`을 확인했다. Scan에서 센서 1개를 발견했고 Connect 후 `Subscribed to SensorFrame notifications`, `BLE state: Subscribed`, PDU `527 bytes`를 확인했다.
+- 초기 Diagnostics에서 accepted/missing/rejected **0/0/0**, timing window **0**, watchdog `Disconnected`, `SensorFrame stream timed out`를 관찰했다. BLE 구독 성공과 실제 센서 프레임 수신 성공은 구분한다.
+- 사용자에게 iPhone 앱 foreground 유지, 화면 위 정지 거치 후 Calibrate 및 Details의 Windows 수/Sample Fresh/약 25 Hz/Frames 증가 확인을 요청했다. 해당 물리 조작과 연속 수신이 확인되기 전 잠금·재연결 bench 통과로 표시하지 않는다.
+
+---
+
 ## 2026-10-04 18:23 KST — 개발자 신뢰 후 iPhone 0.2.0 정상 실행 확인
 
 상태: 실기기 앱 실행/UI `VERIFIED`; Windows 수신·보정·G1 bench는 미검증
