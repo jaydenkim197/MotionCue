@@ -1,12 +1,16 @@
 # iPhone build 4/5 — 유한 잠금 송신 후보 시험
 
-상태: build 4 background 송신 지속은 확인했으나25 Hz/공백 기준은 실패. **build 5 잠금 중 안정적인25 Hz 송신은 아직 미검증**.
+상태: build 4 background 송신 지속은 확인했으나25 Hz/공백 기준은 실패. **build 5 한 번의5분 이상 USB 없는 잠금 송신 지속/약25 Hz 확인**, 전환 gap/전체 세션/반복/G1은 미완료.
 
 수정: build 4는 잠금/background 송신이 계속됐지만 목표25 Hz에 미달했다. build 5가 후속 후보이며 설치·잠금 재시험 상태는 개발 로그를 확인한다.
 
 2026-10-04 배포 확인: iPhone 0.2.0 (4) Release build/strict signing/설치·정상 launch, Simulator 35/35 및 Core Release 30/30 통과. Start 후 Frames 증가 사용자 확인. 실제 iOS background/Windows 수신 시험은 아래 절차로 별도 검증한다.
 
 23:12 KST 후속 배포: source `e1ac090`의 **0.2.0 (5)** strict signing/설치·기기 inventory/일반 launch를 확인했다. 대기 중인 서명 요청은 없다. Simulator 42/42 통과이며 새 보정·foreground 수신/Start/잠금 rate는 아직 실측 전이다.
+
+23:21 KST 후속 실측: 사용자 USB 분리·60초 잠금/Windows Frames 증가 보고와, iOS background90.259 s/+2250 enqueue/**24.9283 Hz**를 대조했다. Windows 사진6.6595604 s/+165 accepted/**24.7764 Hz**, 양쪽 Streaming이다. 잠금 전환 직후 약300 ms send gap 한 번이 남아 무공백/G1 통과를 뜻하지 않는다. [상세 시험 기록](bench-2026-10-04-ios-build5.md). 다음은 같은 세션5분 잠금이다.
+
+23:24 KST 후속: 같은 continuous background summary가**310.8835 s/+7750 =24.92895 Hz**로 이어졌다. 사용자가5분 Windows Frames 증가를 확인했다. 새 invalid/세션 종료/전환 이후 추가≥250 ms send gap event 없음. 별개의60초/5분 두 trial로 집계하지 않는다. 유한 session 전체/Stop·OS cancellation/반복 및 G1은 여전히 남아 있다.
 
 ## build 4 실측과 build 5 후보
 

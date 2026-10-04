@@ -72,7 +72,7 @@ The self-contained output does not require a separate .NET installation. Run `ar
 
 - Primary display only.
 - The Android companion transmitter is not implemented yet.
-- The iPhone transmitter includes an experimental, user-started finite locked session (iOS 26+, 45,000 queued frames/about 30 minutes, 35-minute cap). Build 4 continued transmitting in background but slowed; build 5 replaces the send timer with sample-driven cadence. Locked 25 Hz operation and vehicle timing still require physical validation. See the [lock-session trial guide](docs/bench-ios-build4-lock-session.md).
+- The iPhone transmitter includes an experimental, user-started finite locked session (iOS 26+, 45,000 queued frames/about 30 minutes, 35-minute cap). Build 4 continued transmitting in background but slowed; build 5 replaces the send timer with sample-driven cadence. One USB-disconnected, 5-minute-plus locked trial sustained about 24.93 Hz on the tested iPhone, with a roughly 300 ms transition gap. Full-session completion/cancellation, repeatability and vehicle timing remain unvalidated; this is not unlimited background support. See the [lock-session trial guide](docs/bench-ios-build4-lock-session.md).
 - Phone mounting and vehicle-axis calibration require physical validation.
 - Actual usefulness, cue timing, and distraction require physical field tests.
 - BLE timing and reconnection vary by phone and Windows Bluetooth hardware.

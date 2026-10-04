@@ -16,6 +16,10 @@ Windows 실측 갱신(21:15–21:17 KST): foreground 약 47.3초에서 accepted 
 
 후속(build 5): build4의 background 실행/송신 지속은 확인했지만 약8.45 Hz와 일부 >1초 공백으로G1은 실패. 송신을 real Core Motion sample-driven cadence로 변경했다. Simulator42/42 통과, 23:12 KST 실기기0.2.0 (5)의 strict signing/설치·일반 launch 확인. 새 보정·Start 및 잠금실측은 아직 대기다. 단순 움직임 반응만으로25 Hz/G1 통과를 주장하지 않는다.
 
+잠금 실측 갱신(23:21 KST): build5 첫60초 USB 없는 잠금 시험에서 사용자가 Windows Frames 지속 증가를 확인했고, background90.259 s의 +2250 enqueue/**24.9283 Hz** 및 Windows 사진6.66 s의 +165 accepted/**24.78 Hz**를 대조했다. 구독/fresh/보정 유지, 새 session 종료 없음. 잠금 전환 직후 약300 ms send gap은 남았으며 Windows p50 약59 ms/G1 30분/5분/전체 세션은 미완료다. [새 시험 기록](bench-2026-10-04-ios-build5.md).
+
+후속(23:24 KST): 같은background 구간에서**310.8835 s/+7750 enqueue =24.92895 Hz**, 구독/fresh/보정 유지/새 종료 없음. 사용자가5분 Windows Frames 지속 증가를 확인했다. **한 번의USB 없는5분 이상 잠금 송신 지속은 확인**, 별도독립trial/전체45,000frame·35분/취소·Stop/반복/G1전체는 미완료다. Windows5분 종료 정량snapshot은 아직 없다.
+
 **통제된 연구자 공학 파일럿에 사용할 안정적인 버전**을 만든다. App Store 수준, 모든 휴대폰 지원, 잠금 연속 송신 보장, 멀미 개선 효과 입증은 이번 구현 완료 기준이 아니다.
 
 - 유지: IMU 50 Hz → SensorFrame v1 42 bytes/BLE 25 Hz → Windows cue.

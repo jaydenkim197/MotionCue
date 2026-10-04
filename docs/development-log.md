@@ -23,6 +23,34 @@
 
 ---
 
+## 2026-10-04 23:24 KST — build 5 USB 없는 5분 이상 잠금 송신 지속 확인
+
+상태: 한 번의 연속 잠금 구간에서5분 이상 nominal25 Hz 송신 지속 `VERIFIED`; 전체 유한 세션/종료·취소/반복 및 G1 전체 미완료.
+
+- 사용자는5분 시험 완료/Windows Frames 지속 증가를 보고했다. 추가 회수 `artifacts/ios-runtime-20261004-232258-q7y6P9`에서23:17:39 background 이후23:22:56까지 새 active 전환 없음. 60초 trial 뒤 독립적인 두 번째5분 trial로 중복 집계하지 않고 같은 background 구간 연장으로 기록한다. 이 capture에서 정확한 잠금 해제/foreground 복귀 시각은 아직 미확인이다.
+- Background summary32개,23:17:45–23:22:56 **310.8835 s**, queued8107→15857(+7750) =**24.92895 Hz**. Summary마다 centrals1/fresh1/screenAwake0, 새 freshness 변화/invalid/세션 종료 없음. 마지막 session Frames12639/elapsed507 s. 최근250 enqueue p50범위40.108–40.136 ms/p9546.744–52.695 ms, 마지막max68.625 ms.
+- 전환 직후300.299 ms send gap 외 추가≥250 ms send-opportunity event 없음. 추가drop0/backpressure1(누적1/5). Window-summary/allowlist log는 per-frame 또는Windows 전체 수신 trace가 아니다. Windows5분 종료counter/p95/max 정량 사진은 아직 없으며 지속수신은 사용자 보고로 구분한다.
+- 이 기기/한 번의5분 이상 조건은 확인했지만 무기한 잠금 지원·모든OS·실차/G1 전체 통과는 아니다. 후보는 실제45000fresh enqueue 목표(25 Hz 약30분)/35분 hard limit의 user-started 유한 session이며 자동 재시작 없음. 전체 목표/Stop/OS cancel/새 잠금 반복·Windows간격/필터 지연이 남아 있다. 측정 중 앱/Windows/프로토콜 코드는 변경하지 않았다.
+- 상세수치/증거/한계/후속은 `docs/bench-2026-10-04-ios-build5.md`에 보완했다. 로그·문서 변경은 완료-sync로GitHub에 전달한다; ignored raw evidence/기기 정보는 제외한다.
+- 23:27 KST 추가: 마지막 capture `artifacts/ios-runtime-20261004-232551-HKtzYD`에서background summary49개/23:17:45–23:25:46, **481.2813 s/+11996 =24.92513 Hz**, 구독1/fresh1/추가drop0/backpressure2(마지막summary 누적1/6). 추가invalid/종료/≥250 ms send gap event 없음. 이후inactive→background만 있어 foreground 복귀/실제화면상태를 추정하지 않는다. 마지막 lifecycle의Frames16985/elapsed681 s/누적backpressure10은summary 구간과 구분한다.
+- 문서 표현 보완: build5 cadence38 ms 하한은acquisition timestamp 간격이며 실제enqueue wall-time하한은 아니다. 지연callback/전송backpressure 뒤 모든burst가 없다고unit tests만으로 주장하지 않는다. 이번에는측정 중코드를바꾸지 않고5분 이상실측과이한계를spec/bench에 반영했다.
+
+---
+
+## 2026-10-04 23:21 KST — build 5 첫 잠금 송신 지속 확인 및 Windows 사진 대조
+
+상태: user-started 세션/foreground·첫60초 잠금 송신 지속 `VERIFIED`; 5분/전체 세션/전환 gap/G1 전체는 미완료. 앱 코드는 변경하지 않았다.
+
+- 사용자 요청대로 수동 설명 대신 명명된 앱 runtime JSONL을 직접 회수·계산했다. 23:14:28 Requested→Running과 보정을 확인했다. Foreground60.1721 s의 queued3362→4862(+1500)는24.9285 Hz였다. 기기 연결은 초기 wired, 23:19 localNetwork로 확인했고 debugger/console/재설치/재시작 없이 회수했다.
+- 사용자는 USB 분리·60초 잠금 시험 완료 및 Windows Frames 지속 증가를 보고했다. 23:17:39 background 이후 summary10개(23:17:45–23:19:15), **90.2590 s의 +2250 enqueue =24.9283 Hz**, 구독1/fresh1/screenAwake0, 새로운 invalid/session 종료 없음. 최근250 interval p50 약40.11 ms/p95 약48–53 ms. 이는 build4의 약8.45 Hz 표본보다 개선됐지만 다른 run의 관찰이며 G1 전체 통과가 아니다.
+- 잠금 전환 직후 send-opportunity gap300.299 ms/다음 enqueue window max303.764 ms 한 번이 남았다. 이후90초 summary 구간의 dropped 추가0/backpressure 추가1; 앱 누적은 dropped1/backpressure5로0이 아니다. Windows 수신과 같은 계측점으로 간주하지 않는다.
+- Windows 사진 수신시각23:18:03.0380804→23:18:09.6976408, accepted5449→5614(+165)/6.6595604 s =24.7764 Hz. 양쪽 Subscribed/Streaming/cue visible, missing1/rejected0/sequence gap0.02%, p50 약59 ms/p9560.6 ms/누적max240.4 ms. Median 역수 또는 두 기기 timestamp 차이를 one-way latency로 사용하지 않는다. 실행 EXE manifest는 이번 사진만으로 재검증 불가다.
+- 추가 회수된 이전build4 로그에서 두 번째 세션도22:16:58에8114frames/elapsed789 s로 sessionInterrupted + calibration invalid 종료가 기록됨을 확인했다. OS expiration/35분 timeout이 아니라 보정 무효가 함께 관찰됐으며, 당시 failure category가 없으므로 상세 원인은 단정하지 않는다. Build5의 category 기록/안전 guard는 유지한다.
+- 기존42/42 xcresult를 재확인했다. Mac/fetched GitHub main은76db914로 같고 새 Windows commit은 없었다. 미push Windows 파일/binary 상태는 확인 불가다. 새 시험기록 `docs/bench-2026-10-04-ios-build5.md`와 bench/readiness/개발 로그를 갱신한다. Ignored raw evidence/기기 정보는 Git에 올리지 않는다.
+- 다음 물리 조작은 같은 세션에서 USB 없이5분 잠금/Windows 지속 수신 확인만 사용자에게 요청했다. iPhone 로그·counter/rate/오류 대조는 Mac에서 수행한다. 0.20 s smoothing/프로토콜/Windows EXE 변경 없음.
+
+---
+
 ## 2026-10-04 23:12 KST — build 5 서명 완료·iPhone 설치/실행 확인
 
 상태: Release 서명/실기기 설치/정상 launch `VERIFIED`; 새 보정·Windows 수신 및 잠금 실측 대기. **잠금 문제 해결 완료/G1 통과 아님**.
