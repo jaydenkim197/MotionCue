@@ -23,6 +23,22 @@
 
 ---
 
+## 2026-10-04 20:17 KST — iPhone build 3 최신 소스 설치·실기기 runtime 로그 회수
+
+상태: 최신 Release 서명/설치/정상 실행/기기 로그 `VERIFIED`; 새 보정 후 실제 송신 및 G1 잠금·장시간 bench 대기
+
+- 사용자 진행 요청 후 이전 서명 job의 성공을 확인했다. 기기 잠금 해제와 최신 재빌드의 키체인 요청을 사용자에게 직접 처리하도록 요청했고, source **`212ae50`**로 Release를 다시 빌드해 `BUILD SUCCEEDED` 및 strict codesign 검증 성공을 확인했다. 이전 대기 산출물을 최종 source로 설치하지 않았다.
+- 기존 앱 위로 설치하고 기기 inventory의 **0.2.0/build 3**, debugger/console attach 없는 일반 launch 성공을 확인했다. 실제 screenshot은 **Calibration needed / Ready**, Calibrate 활성화였으며 재시작 뒤 보정을 유지한 것으로 가장하지 않는다.
+- MotionCue app container의 runtime.jsonl 생성과 `tools/collect-ios-runtime-logs.sh` 실기기 회수를 확인했다. 첫 rotation 전 runtime-previous.jsonl 부재는 정상이다. 로그는 ignored `artifacts/ios-runtime-20261004-201635-cKU8XW/`에 보존한다. 기기 전체/타 앱 로그를 수집하지 않고 원본 기기 식별 정보 포함 install/process JSON도 Git에 올리지 않는다.
+- 실제 launch/lifecycle/motion/BLE/summary record를 확인했다. Windows 구독 **1개**, Bluetooth powered/advertising, sensor **Fresh**가 관찰됐다. 미보정 상태의 queued/rate는 **0/0**으로 유지돼 연결을 송신 성공으로 해석하지 않는다.
+- foreground 약 50초의 10초 요약 5개에서 최근 250 tick 간격 p50 약 **40.00 ms**, p95 약 **40.53–40.91 ms**를 관찰했다. 해당 표본의 max는 약 **45.81 ms**, sample age는 약 **5.92–18.03 ms**였다. 이는 iPhone application Timer/fresh sample 검증이며 Windows 수신 간격 58 ms 개선이나 motion-to-display 지연 검증이 아니다.
+- 현 provisioning 만료는 여전히 **2026-10-11 17:40 KST**다. 재서명/설치는 이후 필요하며 App Store 배포가 아니다. 인증서/키체인 보안 설정/기존 앱 데이터를 삭제하지 않았다.
+- 작업 시작 Mac/fetched GitHub main은 `212ae50`으로 같았고 worktree clean/ahead-behind 0/0이었다. Windows 신규 remote commit은 없었다. iOS source와 배포 검증 문서 외 Windows EXE/filter/wire format 변경은 없다.
+
+사용자에게 정지 screen-up 거치 후 Calibrate와 foreground 유지를 요청했다. 이 조작 뒤 enqueue rate/간격/sample age/backpressure를 Windows live reception과 비교한다. 60초·5분 USB 없는 잠금, 30분 foreground, 10회 재연결 및 실차 축/지연 시험은 아직 완료가 아니다.
+
+---
+
 ## 2026-10-04 18:57 KST — Windows 변경 반영 및 iPhone runtime 진단/common-mode 송신 보완
 
 상태: 코드/문서 `IMPLEMENTED`; iOS 자동 테스트 `VERIFIED`; 최신 실기기 서명·설치 및 잠금 재현 대기
