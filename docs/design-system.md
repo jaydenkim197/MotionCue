@@ -2,7 +2,7 @@
 
 > Status: active product-design baseline  
 > Applies to: Windows desktop app, iOS companion app, future study screens, onboarding, and documentation screenshots  
-> Last updated: 2026-08-26
+> Last updated: 2026-10-04
 
 ## 1. Purpose
 
@@ -90,7 +90,7 @@ The default screen has exactly three primary areas, in this order:
 2. **Motion cues** — `Automatic`, `Always on`, and `Off`.
 3. **Visual style** — pattern, color, dot size, and dot density.
 
-The Windows layout may show the live status card in a narrow right column. The iOS layout uses a single vertical column and shows the sensor/advertising status at the top.
+The Windows layout may show the live status card in a narrow right column. iOS uses one compact connection/calibration card, a single Calibrate action, and a gear leading to Details; it does not reproduce the three Windows control areas.
 
 ### 4.2 Advanced view
 
@@ -126,10 +126,10 @@ The Scan and Connect controls are necessary for setup and recovery, but should n
 
 ### 5.1 App header
 
-- 46 px rounded-square product mark with `accent` fill and a white `M`.
-- Product name on the left; one short descriptive line below it.
-- A compact status pill on the right: 8 px accent dot plus a direct state phrase.
-- Do not put settings icons, account controls, or decorative graphics in the header.
+- 46 px rounded-square waveform + dot product mark. Source: `design/brand/motioncue-icon.svg`; renderer: `tools/render-brand-icons.cjs`.
+- Product name on the left. On iOS, omit the descriptive subtitle and status pill; the connection card owns status.
+- iOS has one 44 pt gear button leading to connection options, calibration help and diagnostics. No account controls.
+- iOS AppIcon is an opaque 1024 px square (OS mask); Windows EXE/tray uses a transparent rounded multi-size ICO. Do not use an SF Symbol export as the cross-platform brand icon.
 
 ### 5.2 Cards
 

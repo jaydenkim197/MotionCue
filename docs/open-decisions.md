@@ -74,8 +74,8 @@
 1. ✅ SensorFrame v1 명세와 코덱
 2. ✅ Windows BLE central/GATT client, service 광고 scan, Settings 연결
 3. ✅ 가상 SensorFrame 재생 및 250 ms 중립화·1초 disconnect 검증
-4. iPhone Core Motion/BLE 송신 앱
-5. 실제 iPhone 연결 후 지연·손실 측정
+4. ✅ iPhone Core Motion/BLE 및 실제 Windows 연동(2026-08-24); 새 0.2.0은 [시험 전 gate](pre-field-test-readiness.md)로 재검증
+5. 실제 iPhone 지연·손실 — 수신 간격 진단은 구현, 새 버전 bench·실차 실측 미완료
 6. ✅ Research Mode 조건을 `No Cue / Static Visual Control / Synchronized Cue`로 구현
 
 ## 후속 연구 후보 — 현재 논문 범위 밖

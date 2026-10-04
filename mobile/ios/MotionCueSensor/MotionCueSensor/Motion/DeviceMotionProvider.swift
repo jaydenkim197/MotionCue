@@ -9,6 +9,7 @@ final class DeviceMotionProvider: @unchecked Sendable {
 
     var onSample: ((SensorSample) -> Void)?
     var onAvailabilityChanged: ((Bool) -> Void)?
+    var onError: ((String) -> Void)?
 
     init() {
         queue.name = "com.motioncue.sensor.motion"
@@ -18,6 +19,7 @@ final class DeviceMotionProvider: @unchecked Sendable {
     var isAvailable: Bool { manager.isDeviceMotionAvailable }
 
     func start() {
+        guard !manager.isDeviceMotionActive else { return }
         guard manager.isDeviceMotionAvailable else {
             onAvailabilityChanged?(false)
             return
@@ -25,18 +27,25 @@ final class DeviceMotionProvider: @unchecked Sendable {
         manager.deviceMotionUpdateInterval = 1.0 / 50.0
         // Z is aligned with gravity; this makes stationary mounting diagnostics stable.
         manager.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: queue) { [weak self] motion, error in
-            guard let self, let motion, error == nil else { return }
+            guard let self else { return }
+            guard let motion, error == nil else {
+                self.stateQueue.async { self.latestSample = nil }
+                self.onAvailabilityChanged?(false)
+                self.onError?(error?.localizedDescription ?? "Motion data is unavailable.")
+                return
+            }
             let sample = self.makeSample(from: motion)
             self.stateQueue.async {
                 self.latestSample = sample
             }
             self.onSample?(sample)
+            self.onAvailabilityChanged?(sample.isReliable)
         }
-        onAvailabilityChanged?(true)
     }
 
     func stop() {
         manager.stopDeviceMotionUpdates()
+        stateQueue.async { self.latestSample = nil }
     }
 
     func currentSample() -> SensorSample? {
@@ -59,11 +68,14 @@ final class DeviceMotionProvider: @unchecked Sendable {
         }
         let attitude = motion.attitude.quaternion
         return SensorSample(
-            timestamp: ProcessInfo.processInfo.systemUptime,
+            timestamp: motion.timestamp,
             userAcceleration: vehicleAcceleration(motion.userAcceleration),
             rotationRate: vehicle(motion.rotationRate),
             gravity: vehicleAcceleration(motion.gravity),
             attitude: SensorQuaternion(w: attitude.w, x: attitude.x, y: attitude.y, z: attitude.z),
-            isReliable: motion.attitude.quaternion.w.isFinite)
+            isReliable: [attitude.w, attitude.x, attitude.y, attitude.z,
+                         motion.userAcceleration.x, motion.userAcceleration.y, motion.userAcceleration.z,
+                         motion.rotationRate.x, motion.rotationRate.y, motion.rotationRate.z,
+                         motion.gravity.x, motion.gravity.y, motion.gravity.z].allSatisfy(\.isFinite))
     }
 }

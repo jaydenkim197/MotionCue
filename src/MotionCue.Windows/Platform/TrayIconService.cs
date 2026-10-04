@@ -9,6 +9,7 @@ public sealed class TrayIconService : IDisposable
 {
     private readonly MotionController _controller;
     private readonly Forms.NotifyIcon _notifyIcon;
+    private readonly Icon _brandIcon;
     private readonly Forms.ToolStripMenuItem _automaticItem;
     private readonly Forms.ToolStripMenuItem _onItem;
     private readonly Forms.ToolStripMenuItem _offItem;
@@ -28,9 +29,13 @@ public sealed class TrayIconService : IDisposable
         menu.Items.Add("Settings", null, (_, _) => SettingsRequested?.Invoke(this, EventArgs.Empty));
         menu.Items.Add("Quit", null, (_, _) => QuitRequested?.Invoke(this, EventArgs.Empty));
 
+        using var iconStream = typeof(TrayIconService).Assembly.GetManifestResourceStream("MotionCue.Windows.Assets.MotionCue.ico")
+            ?? throw new InvalidOperationException("MotionCue tray icon resource is missing.");
+        using var sourceIcon = new Icon(iconStream, new Size(32, 32));
+        _brandIcon = (Icon)sourceIcon.Clone();
         _notifyIcon = new Forms.NotifyIcon
         {
-            Icon = SystemIcons.Information,
+            Icon = _brandIcon,
             Text = "MotionCue",
             ContextMenuStrip = menu,
             Visible = true
@@ -55,6 +60,7 @@ public sealed class TrayIconService : IDisposable
         _controller.SourceStatusChanged -= OnSourceStatusChanged;
         _notifyIcon.Visible = false;
         _notifyIcon.Dispose();
+        _brandIcon.Dispose();
     }
 
     private Forms.ToolStripMenuItem CreateModeItem(string label, MotionCueMode mode)

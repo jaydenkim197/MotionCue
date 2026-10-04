@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct ContentView: View {
     @ObservedObject var model: AppModel
@@ -23,13 +24,9 @@ struct ContentView: View {
 
     private var header: some View {
         HStack(spacing: 12) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(Color("Accent"))
-                Text("M")
-                    .font(.system(size: 21, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-            }
+            Image("BrandMark")
+                .resizable()
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .frame(width: 46, height: 46)
             .accessibilityHidden(true)
 
@@ -76,26 +73,41 @@ struct ContentView: View {
 
             Divider().overlay(Color("Border"))
 
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("Calibration")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(Color("TextMuted"))
-                        .lineLimit(1)
-                    Text(model.calibrationState.label)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Color("Text"))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.72)
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 12) {
+                    calibrationSummary
+                    Spacer(minLength: 8)
+                    calibrateButton
                 }
-                Spacer(minLength: 8)
-                Button("Calibrate") { model.calibrate() }
-                    .buttonStyle(MotionCuePrimaryButtonStyle())
-                    .disabled(!model.motionAvailable)
-                    .accessibilityHint("Keep the mounted iPhone still for one second.")
+                VStack(alignment: .leading, spacing: 12) {
+                    calibrationSummary
+                    calibrateButton
+                }
             }
-
         }
+    }
+
+    private var calibrationSummary: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text("Calibration")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Color("TextMuted"))
+                .lineLimit(1)
+            Text(model.calibrationState.shortLabel)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color("Text"))
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
+        }
+    }
+
+    private var calibrateButton: some View {
+        Button("Calibrate") { model.calibrate() }
+            .buttonStyle(MotionCuePrimaryButtonStyle())
+            .disabled(!model.motionAvailable || !model.sampleIsFresh)
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
+            .accessibilityHint("Keep the mounted iPhone still for one second.")
     }
 
     private var detailsSheet: some View {
@@ -114,17 +126,33 @@ struct ContentView: View {
                             .lineLimit(1)
                     }
 
-                    DetailCard(title: "Background") {
-                        Label("Bluetooth available while locked", systemImage: "lock.open")
+                    DetailCard(title: "During use") {
+                        Toggle("Keep screen on", isOn: $model.keepScreenAwake)
+                            .font(.subheadline.weight(.semibold))
+                            .lineLimit(1)
+                        Text("Only while connected and calibrated. Recommended for the first vehicle test.")
+                            .font(.caption)
+                            .foregroundStyle(Color("TextMuted"))
+                        Label("Lock test pending", systemImage: "lock")
                             .font(.subheadline)
                             .foregroundStyle(Color("TextSecondary"))
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
-                        Text("Motion updates may pause until unlock.")
+                        Text("Bluetooth background support is enabled, but iOS may pause motion updates. A locked phone is not yet a validated continuous sensor.")
                             .font(.caption)
                             .foregroundStyle(Color("TextMuted"))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
+                    }
+
+                    DetailCard(title: "Calibration") {
+                        Text(model.calibrationState.label)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Color("TextSecondary"))
+                        Text(model.statusMessage)
+                            .font(.caption)
+                            .foregroundStyle(Color("TextMuted"))
+                        Text("Mount screen-up with the top edge pointing forward. Stop the vehicle before calibrating.")
+                            .font(.caption)
+                            .foregroundStyle(Color("TextMuted"))
                     }
 
                     DetailCard(title: "Diagnostics") {
@@ -135,6 +163,9 @@ struct ContentView: View {
                             diagnosticRow("Advertising", model.peripheralStatus.isAdvertising ? "On" : "Off")
                             diagnosticRow("Rate", String(format: "%.1f Hz", model.transmitRate))
                             diagnosticRow("Frames", "\(model.sentFrameCount)")
+                            diagnosticRow("Dropped", "\(model.peripheralStatus.droppedFrameCount)")
+                            diagnosticRow("Sample", model.sampleIsFresh ? "Fresh" : "Paused / unavailable")
+                            diagnosticRow("Version", Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
                             diagnosticRow("Last send", lastNotificationText)
                             diagnosticRow(
                                 "Acceleration",
@@ -148,7 +179,14 @@ struct ContentView: View {
                             Text(error)
                                 .font(.caption)
                                 .foregroundStyle(Color("Danger"))
-                                .lineLimit(2)
+                        }
+                        Text("Rate and frames count notifications queued by Bluetooth, not Windows reception. Discovery off does not disconnect an already connected Windows device.")
+                            .font(.caption)
+                            .foregroundStyle(Color("TextMuted"))
+                        Button("iOS Settings") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
                         }
                     }
                 }
@@ -175,28 +213,38 @@ struct ContentView: View {
 
     private var advertisingBinding: Binding<Bool> {
         Binding(
-            get: { model.peripheralStatus.isAdvertising },
+            get: { model.peripheralStatus.advertisingEnabled },
             set: { model.setAdvertising($0) })
     }
 
     private var connectionIcon: String {
-        if model.peripheralStatus.connectedCentrals > 0 { return "checkmark.circle.fill" }
+        if model.peripheralStatus.connectedCentrals > 0 {
+            return model.sampleIsFresh && model.calibrationState.isCalibrated
+                ? "checkmark.circle.fill" : "pause.circle.fill"
+        }
         if !model.motionAvailable { return "exclamationmark.triangle.fill" }
         return "iphone.radiowaves.left.and.right"
     }
 
     private var connectionTitle: String {
-        if model.peripheralStatus.connectedCentrals > 0 { return "Windows connected" }
-        if !model.motionAvailable { return "Motion access needed" }
+        if !model.peripheralStatus.isPoweredOn { return "Bluetooth unavailable" }
+        if !model.motionAvailable { return "Motion unavailable" }
+        if model.peripheralStatus.connectedCentrals > 0 {
+            if !model.sampleIsFresh { return "Sensor paused" }
+            return model.calibrationState.isCalibrated ? "Connected" : "Calibration needed"
+        }
         if !model.peripheralStatus.isAdvertising { return "Connection off" }
         return "Ready to connect"
     }
 
     private var connectionHint: String {
         if model.peripheralStatus.connectedCentrals > 0 {
-            return String(format: "Sending motion data · %.0f Hz", model.transmitRate)
+            if !model.sampleIsFresh { return "No fresh data · check Details." }
+            if !model.calibrationState.isCalibrated { return "Keep still, then Calibrate." }
+            return String(format: "Bluetooth queued · %.0f Hz", model.transmitRate)
         }
-        if !model.motionAvailable { return "Allow Motion & Fitness access." }
+        if !model.peripheralStatus.isPoweredOn { return "Check Bluetooth in Details." }
+        if !model.motionAvailable { return "Check sensor access in Details." }
         if !model.peripheralStatus.isAdvertising { return "Turn it on in Details." }
         return "Tap Scan in Windows MotionCue."
     }

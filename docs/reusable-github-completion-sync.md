@@ -130,10 +130,10 @@ The important ordering is **fetch → snapshot local work → rebase remote work
 
 ### 6.1 States that force a safe pause
 
-The helper checks for these Git-operation markers before it changes anything:
+The helper requires main and checks these Git-operation markers before it changes anything. REBASE_HEAD alone is historical state and can remain after a successful rebase; the active rebase directories are the safe pause markers:
 
 - `MERGE_HEAD`
-- `REBASE_HEAD`
+- `REVERT_HEAD`
 - `CHERRY_PICK_HEAD`
 - `rebase-merge`
 - `rebase-apply`
@@ -265,4 +265,3 @@ Copy this workflow to another project only after all boxes are true:
 - [MotionCue cross-platform Git workflow](cross-platform-git-workflow.md) — project-specific boundaries and operating policy.
 - [Mac Git autosync setup](mac-git-autosync-setup.md) — original Mac clone/setup prompt for this project.
 - [Development log](development-log.md) — historical decisions and actual sync incidents.
-

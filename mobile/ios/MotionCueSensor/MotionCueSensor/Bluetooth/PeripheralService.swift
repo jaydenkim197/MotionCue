@@ -4,10 +4,13 @@ import Foundation
 struct PeripheralStatus: Equatable {
     var bluetoothLabel = "Bluetooth starting"
     var isPoweredOn = false
+    var advertisingEnabled = true
     var isAdvertising = false
     var connectedCentrals = 0
     var applicationState = "Foreground"
     var lastNotificationDate: Date?
+    var notificationCount = 0
+    var droppedFrameCount = 0
     var lastError: String?
 }
 
@@ -15,26 +18,26 @@ final class PeripheralService: NSObject, @unchecked Sendable {
     private let queue = DispatchQueue(label: "com.motioncue.sensor.peripheral")
     private var manager: CBPeripheralManager!
     private var frameCharacteristic: CBMutableCharacteristic?
-    private var latestFrame: Data?
+    private var pendingFrame: PendingSensorFrame?
     private var serviceAdded = false
-    private var shouldAdvertise = true
-    private var subscriberCount = 0
+    private var serviceAdding = false
+    private var subscribers: Set<UUID> = []
+    private var status = PeripheralStatus()
 
     var onStatusChanged: ((PeripheralStatus) -> Void)?
-    private var status = PeripheralStatus()
+    // Accepted by CoreBluetooth, not an acknowledgment of reception by Windows.
+    var onFrameQueued: ((UUID) -> Void)?
 
     override init() {
         super.init()
-        manager = CBPeripheralManager(
-            delegate: self,
-            queue: queue,
+        manager = CBPeripheralManager(delegate: self, queue: queue,
             options: [CBPeripheralManagerOptionRestoreIdentifierKey: "com.motioncue.sensor.peripheral"])
     }
 
     func setApplicationBackgrounded(_ isBackgrounded: Bool) {
         queue.async { [weak self] in
             guard let self else { return }
-            self.status.applicationState = isBackgrounded ? "Background BLE enabled" : "Foreground"
+            self.status.applicationState = isBackgrounded ? "Background" : "Foreground"
             self.publishStatus()
         }
     }
@@ -42,58 +45,69 @@ final class PeripheralService: NSObject, @unchecked Sendable {
     func setAdvertisingEnabled(_ enabled: Bool) {
         queue.async { [weak self] in
             guard let self else { return }
-            self.shouldAdvertise = enabled
+            self.status.advertisingEnabled = enabled
             if !enabled {
                 self.manager.stopAdvertising()
                 self.status.isAdvertising = false
-                self.publishStatus()
             } else {
                 self.startAdvertisingIfReady()
             }
+            self.publishStatus()
         }
     }
 
-    func publishLatest(_ frame: Data) {
+    func clearPending() {
+        queue.async { [weak self] in self?.pendingFrame = nil }
+    }
+
+    func publishLatest(_ frame: PendingSensorFrame) {
         queue.async { [weak self] in
             guard let self else { return }
-            self.latestFrame = frame
+            if self.pendingFrame != nil { self.status.droppedFrameCount += 1 }
+            self.pendingFrame = frame
             self.sendLatestIfPossible()
         }
     }
 
-    private func configureService() {
-        manager.removeAllServices()
-        let frame = CBMutableCharacteristic(
-            type: CBUUID(nsuuid: MotionCueProtocol.sensorFrameUUID),
-            properties: [.notify],
-            value: nil,
-            permissions: [])
-        let control = CBMutableCharacteristic(
-            type: CBUUID(nsuuid: MotionCueProtocol.controlUUID),
-            properties: [.read],
-            value: Data(),
-            permissions: [.readable])
+    private func configureServiceIfNeeded() {
+        guard !serviceAdded, !serviceAdding else { return }
+        let frame = CBMutableCharacteristic(type: CBUUID(nsuuid: MotionCueProtocol.sensorFrameUUID),
+            properties: [.notify], value: nil, permissions: [])
+        let control = CBMutableCharacteristic(type: CBUUID(nsuuid: MotionCueProtocol.controlUUID),
+            properties: [.read], value: Data(), permissions: [.readable])
         let service = CBMutableService(type: CBUUID(nsuuid: MotionCueProtocol.serviceUUID), primary: true)
         service.characteristics = [frame, control]
         frameCharacteristic = frame
-        serviceAdded = false
+        serviceAdding = true
         manager.add(service)
     }
 
     private func startAdvertisingIfReady() {
-        guard shouldAdvertise, serviceAdded, manager.state == .poweredOn else { return }
-        guard !manager.isAdvertising else { return }
+        guard status.advertisingEnabled, serviceAdded, manager.state == .poweredOn,
+              !manager.isAdvertising else { return }
         manager.startAdvertising([CBAdvertisementDataServiceUUIDsKey: [CBUUID(nsuuid: MotionCueProtocol.serviceUUID)]])
     }
 
     private func sendLatestIfPossible() {
-        guard subscriberCount > 0, let latestFrame, let frameCharacteristic else { return }
-        if manager.updateValue(latestFrame, for: frameCharacteristic, onSubscribedCentrals: nil) {
-            status.lastNotificationDate = Date()
+        guard let frame = pendingFrame else { return }
+        guard frame.isFresh(now: ProcessInfo.processInfo.systemUptime) else {
+            pendingFrame = nil
+            status.droppedFrameCount += 1
             publishStatus()
+            return
         }
-        // A false result means CoreBluetooth is flow-controlled. The latest frame remains in
-        // latestFrame and is retried from peripheralManagerIsReady without growing a queue.
+        guard manager.state == .poweredOn, !subscribers.isEmpty, let frameCharacteristic else {
+            pendingFrame = nil
+            return
+        }
+        if manager.updateValue(frame.data, for: frameCharacteristic, onSubscribedCentrals: nil) {
+            pendingFrame = nil
+            status.lastNotificationDate = Date()
+            status.notificationCount += 1
+            publishStatus()
+            DispatchQueue.main.async { [weak self] in self?.onFrameQueued?(frame.session) }
+        }
+        // False: retain one replaceable frame, retry only while the sample is fresh.
     }
 
     private func publishStatus() {
@@ -106,19 +120,25 @@ extension PeripheralService: CBPeripheralManagerDelegate {
     func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
         status.isPoweredOn = peripheral.state == .poweredOn
         status.bluetoothLabel = switch peripheral.state {
-        case .poweredOn: "Bluetooth ready"
-        case .poweredOff: "Bluetooth is off — turn it on in Settings"
-        case .unauthorized: "Bluetooth permission is not available"
-        case .unsupported: "Bluetooth LE Peripheral is unsupported"
-        case .resetting: "Bluetooth is resetting"
-        case .unknown: "Bluetooth state is unknown"
-        @unknown default: "Bluetooth state is unavailable"
+        case .poweredOn: "Ready"
+        case .poweredOff: "Off — enable Bluetooth in Settings"
+        case .unauthorized: "Permission denied — check Settings"
+        case .unsupported: "BLE peripheral unsupported"
+        case .resetting: "Resetting"
+        case .unknown: "Starting"
+        @unknown default: "Unavailable"
         }
         status.lastError = nil
         if peripheral.state == .poweredOn {
-            configureService()
+            configureServiceIfNeeded()
+            startAdvertisingIfReady()
+            status.isAdvertising = peripheral.isAdvertising
         } else {
             serviceAdded = false
+            serviceAdding = false
+            frameCharacteristic = nil
+            pendingFrame = nil
+            subscribers.removeAll()
             status.isAdvertising = false
             status.connectedCentrals = 0
         }
@@ -126,13 +146,10 @@ extension PeripheralService: CBPeripheralManagerDelegate {
     }
 
     func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
-        if let error {
-            status.lastError = "Could not add MotionCue BLE service: \(error.localizedDescription)"
-            serviceAdded = false
-        } else {
-            serviceAdded = true
-            startAdvertisingIfReady()
-        }
+        serviceAdding = false
+        serviceAdded = error == nil
+        status.lastError = error.map { "BLE service: \($0.localizedDescription)" }
+        if serviceAdded { startAdvertisingIfReady() }
         publishStatus()
     }
 
@@ -144,16 +161,17 @@ extension PeripheralService: CBPeripheralManagerDelegate {
 
     func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didSubscribeTo characteristic: CBCharacteristic) {
         guard characteristic.uuid == CBUUID(nsuuid: MotionCueProtocol.sensorFrameUUID) else { return }
-        subscriberCount += 1
-        status.connectedCentrals = subscriberCount
+        subscribers.insert(central.identifier)
+        pendingFrame = nil
+        status.connectedCentrals = subscribers.count
         publishStatus()
-        sendLatestIfPossible()
     }
 
     func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didUnsubscribeFrom characteristic: CBCharacteristic) {
         guard characteristic.uuid == CBUUID(nsuuid: MotionCueProtocol.sensorFrameUUID) else { return }
-        subscriberCount = max(0, subscriberCount - 1)
-        status.connectedCentrals = subscriberCount
+        subscribers.remove(central.identifier)
+        pendingFrame = nil
+        status.connectedCentrals = subscribers.count
         publishStatus()
     }
 
@@ -162,7 +180,17 @@ extension PeripheralService: CBPeripheralManagerDelegate {
     }
 
     func peripheralManager(_ peripheral: CBPeripheralManager, willRestoreState dict: [String: Any]) {
-        status.applicationState = "Restored by Bluetooth"
+        let services = dict[CBPeripheralManagerRestoredStateServicesKey] as? [CBMutableService] ?? []
+        let service = services.first { $0.uuid == CBUUID(nsuuid: MotionCueProtocol.serviceUUID) }
+        frameCharacteristic = service?.characteristics?.first {
+            $0.uuid == CBUUID(nsuuid: MotionCueProtocol.sensorFrameUUID)
+        } as? CBMutableCharacteristic
+        serviceAdded = frameCharacteristic != nil
+        subscribers = Set(frameCharacteristic?.subscribedCentrals?.map(\.identifier) ?? [])
+        status.connectedCentrals = subscribers.count
+        status.applicationState = "BLE restored — recalibrate"
+        pendingFrame = nil
+        // Calibration is deliberately not persisted across process termination.
         publishStatus()
     }
 }

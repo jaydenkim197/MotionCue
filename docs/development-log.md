@@ -23,6 +23,40 @@
 
 ---
 
+## 2026-10-04 — 시험 전 안정성 보강 및 waveform 브랜드 적용
+
+상태: 방향 `DECISION`, 코드/문서 `IMPLEMENTED`; 자동 검증 `VERIFIED`; 실기기 설치와 Windows 물리 bench는 별도
+
+- 사용자가 좌상단 waveform + dot 레퍼런스를 선택했다. 독자 SVG 원본과 iOS PNG, Windows 다중 크기 ICO를 생성하는 스크립트를 추가했다. SF Symbols glyph를 제품 아이콘으로 복제하지 않았다.
+- iOS 기본 화면의 최소 정보/한 줄 label 원칙을 유지하고, Calibration 상세·오류·진단·화면 유지 옵션을 Details로 분리했다. 연결 자체를 송신 성공으로 표시하지 않도록 구분한다.
+- 실제 Core Motion 취득 timestamp 기반 100 ms freshness gate와 중복 sample 거부를 추가했다. BLE flow-control 캐시는 1개만 유지하며 오래된 프레임 및 이미 enqueue한 프레임을 재송신하지 않는다.
+- BLE 복구 시 service/characteristic/subscriber 상태를 복원하고, process 종료 후 calibration은 새로 요구한다. Bluetooth off/reset 때 구독자·캐시를 초기화한다. Background 지원은 연속 송신 보장을 뜻하지 않는다.
+- 송신 진단은 encode 횟수가 아니라 CoreBluetooth enqueue 성공 기준으로 변경했다. Windows 수신 acknowledgment는 아니며, Windows reception 확인은 별도 실측한다.
+- Windows hidden Diagnostics에 bounded 수신 간격 통계를 추가했다(p50/p95/max/jitter SD, accepted/missing/rejected, sequence gap 비율). 최근 1500 간격만 보관하며 좌표·raw IMU를 추가 저장하지 않는다. Sequence gap은 송신측 drop도 포함하고, 수신 간격을 one-way latency로 표현하지 않는다. 기존 0.20 s cue filter는 유지한다.
+- 보정 시 중복·간격 단절·회전 중 sample과 nonfinite 값을 거부한다. 평균 gravity가 +Z에서 20° 이내인 화면 위 거치를 요구한다(전방 yaw는 물리 정렬 필요). Windows의 cue filter/연구 조건/SensorFrame v1 wire format은 변경하지 않는다.
+- Mac/Windows completion-sync helper가 오래된 `REBASE_HEAD`를 활성 rebase로 오인하는 문제를 수정했다. 실제 rebase 디렉터리와 merge/cherry-pick/revert/index lock 보호는 유지한다.
+- 시작 시 Mac HEAD와 origin/main은 `ebbbe7f`로 동일했다. GitHub의 최신 Windows 기록은 2026-09-04였으며, Windows 미push 작업 및 기존 배포 EXE는 Mac에서 확인되지 않았다.
+- Xcode 27.0/macOS 26.6.2/iPhone iOS 27.0.1 환경으로 갱신되어 있었다. 새 환경에서 build/test/install을 다시 검증한다.
+- 실차 전 목표는 기존 `NoCue / StaticVisualControl / SynchronizedCue`의 연구용 안정성이다. AI/CV는 후속 제안으로 보류한다. 기술 bench → 연구자 engineering pilot → 심의/동의/프로토콜 고정 후 참가자 시험으로 구분한다.
+- iOS/Windows 버전을 0.2.0 pilot으로 구분했다. Windows version label은 assembly version을 사용한다. `tools/build-windows-release.ps1`은 core tests/publish/source revision/SHA256 manifest를 제공한다. 기존 EXE는 Git pull로 자동 갱신되지 않는다.
+- 새 `docs/pre-field-test-readiness.md`에 G0–G3, 30분 foreground/60초·5분 잠금/10회 재연결/임시 수신 간격·gap 기준, Windows handoff와 측정 template을 기록했다. 연구 계획의 오래된 iPhone 미구현·실BLE 미검증 체크리스트를 갱신했다.
+
+검증:
+
+- iOS Simulator 27.0: encoder 4 + safety 11 = **15 tests 통과**. 새 freshness/중복/expiry/정지·회전·gravity·거치/stream invalid 검증 포함.
+- Microsoft 공식 installer로 ignored `.tools/dotnet8-mac`에 .NET SDK 8.0.425를 추가했다. global SDK/Windows local SDK를 변경하지 않았다.
+- Core Release: 기존 24 + timing 6 = **30 tests 통과**.
+- Windows Release cross-build: **경고 0/오류 0**, win-x64 self-contained single-file publish 성공. PE32+ x64 EXE와 embedded icon 준비. 실제 Windows 실행/새 BLE stats/tray 및 PowerShell helper 실행은 미검증.
+- Mac completion-sync local bare fixture: stale REBASE_HEAD 허용, active rebase/merge/cherry-pick/revert/index lock/non-main pause, 비충돌 divergent commit rebase/push 등 **9개 시나리오 통과**. Fixtures는 ignored artifacts에 보존했다.
+- iOS는 Xcode의 AppIntents dependency가 없는 metadata skip 안내만 발생했다. 앱 코드 compile 오류는 없으며, 실기기 코드 서명은 키체인 허용 단계에서 대기해 사용자 직접 조작을 요청했다. 설치 성공으로 간주하지 않는다.
+- iOS 27 Simulator 앱 실행과 실제 screenshot에서 waveform header/compact 단일 card/한 줄 label을 시각 확인했다. Simulator의 Bluetooth unavailable 상태이며 실BLE 통과 증거가 아니다. Screenshot: ignored `artifacts/ios-main-0.2.0.png`.
+- 대기 중 코드 보완으로 초기 서명 job만 중단한 뒤 최신 소스로 다시 Release build를 시작했다. 최신 job도 codesign 키체인 접근 단계 대기이며 사용자 허용 전 기존 iPhone 설치 앱을 덮어쓰지 않았다.
+- 기존 인증서/provisioning/USB backup/사용자 파일은 삭제하지 않았다. 인증·암호 정보를 저장하지 않았다.
+
+물리 잔여 작업: 키체인 허용 및 최신 iPhone 설치/실행 확인, Windows pull·재빌드·revision 확인, G1 bench, 실제 거치·축·지연 및 연구 절차 확정. 2026-08-24 연동 성공은 0.2.0 조합 검증 결과가 아니다.
+
+---
+
 ## 2026-09-05 — SF Symbols 아이콘 디자인 환경 및 MotionCue 아이콘 레퍼런스
 
 상태: `IMPLEMENTED`; 최종 아이콘 선택은 `PLANNED`

@@ -5,7 +5,7 @@ Research Mode is pilot instrumentation for controlled MotionCue studies. It is n
 ## Open
 
 1. Open Settings.
-2. Click `Version 0.1.0-dev` five times.
+2. Click the MotionCue version label five times (0.2.0 pilot in the current build).
 3. Scroll to `Research Session`.
 
 Use anonymous participant codes such as `P01`; never enter a name, email address, student number, or contact detail.

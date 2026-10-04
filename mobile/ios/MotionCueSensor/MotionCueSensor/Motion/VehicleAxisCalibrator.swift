@@ -19,6 +19,15 @@ enum CalibrationState: Equatable {
         if case .calibrated = self { return true }
         return false
     }
+
+    var shortLabel: String {
+        switch self {
+        case .ready: "Ready"
+        case .collecting: "Checking"
+        case .calibrated: "Calibrated"
+        case .invalid: "Recalibrate"
+        }
+    }
 }
 
 final class VehicleAxisCalibrator {
@@ -37,10 +46,17 @@ final class VehicleAxisCalibrator {
 
     func acceptForCalibration(_ sample: SensorSample) -> CalibrationState {
         guard case .collecting = state else { return state }
-        guard sample.isReliable, sample.userAcceleration.isFinite, sample.gravity.isFinite,
+        guard sample.isReliable, sample.timestamp.isFinite, sample.userAcceleration.isFinite,
+              sample.rotationRate.isFinite, sample.gravity.isFinite,
               sample.attitude.normalized() != nil else {
             state = .invalid(reason: "sensor reading is unavailable")
             return state
+        }
+        if let previous = samples.last {
+            guard sample.timestamp > previous.timestamp, sample.timestamp - previous.timestamp <= 0.1 else {
+                state = .invalid(reason: "sensor timing interrupted — recalibrate")
+                return state
+            }
         }
         samples.append(sample)
         if samples.count < requiredSamples {
@@ -50,7 +66,8 @@ final class VehicleAxisCalibrator {
 
         let averageAcceleration = samples.map(\.userAcceleration.magnitude).reduce(0, +) / Double(samples.count)
         let averageGravity = samples.map(\.gravity.magnitude).reduce(0, +) / Double(samples.count)
-        guard averageAcceleration < 0.20 else {
+        let averageRotation = samples.map(\.rotationRate.magnitude).reduce(0, +) / Double(samples.count)
+        guard averageAcceleration < 0.20, averageRotation < 0.10 else {
             state = .invalid(reason: "keep the vehicle stationary, then recalibrate")
             return state
         }
@@ -59,14 +76,23 @@ final class VehicleAxisCalibrator {
             return state
         }
         baselineAttitude = samples.last!.attitude.normalized()
+        let averageDown = samples.map(\.gravity.z).reduce(0, +) / Double(samples.count)
+        guard averageDown / averageGravity >= cos(20 * .pi / 180) else {
+            state = .invalid(reason: "mount screen-up, top edge forward, then recalibrate")
+            return state
+        }
         previousSample = samples.last
         state = .calibrated
         return state
     }
 
     func frame(from sample: SensorSample, sequence: UInt32, elapsedMilliseconds: UInt32, sessionReset: Bool) -> SensorFrame? {
-        guard state.isCalibrated, let baseline = baselineAttitude,
-              sample.isReliable, let current = sample.attitude.normalized() else { return nil }
+        guard state.isCalibrated, let baseline = baselineAttitude else { return nil }
+        guard sample.isReliable, sample.userAcceleration.isFinite, sample.rotationRate.isFinite,
+              sample.gravity.isFinite, let current = sample.attitude.normalized() else {
+            state = .invalid(reason: "sensor reading is unavailable")
+            return nil
+        }
 
         // An abrupt orientation jump with almost no measured rotation is characteristic of a loose mount.
         if let previous = previousSample,

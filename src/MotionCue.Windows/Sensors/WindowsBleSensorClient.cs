@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using MotionCue.Sensors;
 using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.Advertisement;
@@ -53,6 +54,7 @@ public sealed class WindowsBleSensorClient : IAsyncDisposable
     private readonly object _frameGate = new();
     private readonly SensorSequenceTracker _sequenceTracker = new();
     private readonly SensorLinkWatchdog _watchdog = new();
+    private readonly SensorTimingMonitor _timing = new();
     private BluetoothLEDevice? _device;
     private GattSession? _session;
     private GattDeviceService? _service;
@@ -69,6 +71,11 @@ public sealed class WindowsBleSensorClient : IAsyncDisposable
     public event EventHandler<BleSensorStatus>? StatusChanged;
     public event EventHandler<BleSensorFrameEventArgs>? FrameReceived;
     public event EventHandler<BleSensorDecodeErrorEventArgs>? FrameRejected;
+
+    public SensorTimingSnapshot TimingSnapshot
+    {
+        get { lock (_frameGate) { return _timing.Snapshot(); } }
+    }
 
     public static async Task<IReadOnlyList<BleSensorCandidate>> DiscoverAsync(
         CancellationToken cancellationToken = default)
@@ -220,6 +227,7 @@ public sealed class WindowsBleSensorClient : IAsyncDisposable
             {
                 _sequenceTracker.Reset();
                 _watchdog.Reset();
+                _timing.Reset();
             }
             SetStatus(
                 BleSensorClientState.Subscribed,
@@ -314,6 +322,7 @@ public sealed class WindowsBleSensorClient : IAsyncDisposable
 
         if (!SensorFrameCodec.TryDecode(bytes, out var frame, out var error))
         {
+            lock (_frameGate) { _timing.Reject(); }
             FrameRejected?.Invoke(this, new BleSensorDecodeErrorEventArgs(error, bytes.Length, receivedAt));
             return;
         }
@@ -329,6 +338,12 @@ public sealed class WindowsBleSensorClient : IAsyncDisposable
             if (observation.Disposition is SensorFrameDisposition.Accepted or SensorFrameDisposition.AcceptedWithGap)
             {
                 _watchdog.Observe(receivedAt);
+                _timing.Observe((double)Stopwatch.GetTimestamp() / Stopwatch.Frequency,
+                    observation.MissingBeforeFrame, frame.Flags.HasFlag(SensorFrameFlags.ClockReset));
+            }
+            else
+            {
+                _timing.Reject();
             }
         }
 

@@ -199,12 +199,18 @@ public sealed class MotionController : IAsyncDisposable
     {
         var state = CurrentState;
         var tuning = _phoneEstimator.Tuning;
+        var timing = _bleClient.TimingSnapshot;
         return string.Join(Environment.NewLine,
             $"Source: {ActiveSourceName}",
             $"Availability: {SourceStatus.Availability}",
             $"Source kind: {SourceStatus.SourceKind}",
             $"BLE state: {_bleClient.Status.State}",
             $"BLE PDU: {(_bleClient.Status.MaxPduSize is null ? "—" : $"{_bleClient.Status.MaxPduSize} bytes")}",
+            $"BLE accepted / missing / rejected: {timing.AcceptedFrames} / {timing.MissingFrames} / {timing.RejectedFrames}",
+            $"BLE sequence gaps: {timing.SequenceGapRate:P2} (includes sender-side drops)",
+            $"BLE interval p50 / p95: {timing.MedianIntervalMilliseconds:F1} / {timing.P95IntervalMilliseconds:F1} ms",
+            $"BLE interval max / jitter SD: {timing.MaximumIntervalMilliseconds:F1} / {timing.IntervalStandardDeviationMilliseconds:F1} ms",
+            $"BLE timing window: {timing.WindowIntervals} intervals (max 1500; not one-way latency)",
             $"Link watchdog: {_linkState}",
             $"Sample timestamp: {state.Timestamp:O}",
             $"Sample interval: {(state.SampleInterval is null ? "—" : $"{state.SampleInterval.Value.TotalMilliseconds:F0} ms")}",

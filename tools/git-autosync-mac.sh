@@ -6,7 +6,7 @@ set -u
 set -o pipefail
 
 repository_root="${1:-$(cd "$(dirname "$0")/.." && pwd)}"
-log_directory="$HOME/Library/Logs/MotionCue"
+log_directory="${MOTIONCUE_SYNC_LOG_DIRECTORY:-$HOME/Library/Logs/MotionCue}"
 log_path="$log_directory/git-autosync.log"
 
 mkdir -p "$log_directory"
@@ -36,12 +36,19 @@ fi
 git_directory="$(git -C "$repository_root" rev-parse --path-format=absolute --git-dir)" \
     || fail "Unable to locate the Git directory."
 
-for operation in MERGE_HEAD REBASE_HEAD CHERRY_PICK_HEAD rebase-merge rebase-apply index.lock; do
+# REBASE_HEAD can survive a completed rebase; the rebase directories indicate an
+# active operation. Do not mistake that historical pseudoref for an active lock.
+for operation in MERGE_HEAD CHERRY_PICK_HEAD REVERT_HEAD rebase-merge rebase-apply index.lock; do
     if [ -e "$git_directory/$operation" ]; then
         write_log "PAUSED: Git operation in progress ($operation). Resolve it manually; no files were changed."
         exit 2
     fi
 done
+
+if [ "$(git -C "$repository_root" branch --show-current)" != "main" ]; then
+    write_log "PAUSED: completion-sync requires main; no files were changed."
+    exit 2
+fi
 
 run_git fetch origin --prune
 

@@ -62,7 +62,7 @@ Positive yaw around `+Z` means a right turn. `userAcceleration` excludes gravity
 
 ## 5. App UI and state machine
 
-Use a simple, researcher-facing single screen. The normal path must be understandable without a hidden developer panel.
+Use one compact connection/calibration card. A visible gear opens Details for discovery, screen-awake, calibration help, permission recovery and diagnostics. Short labels stay on one line; detailed prose uses full-width rows.
 
 | State | Visible text | Allowed actions | BLE behavior |
 |---|---|---|---|
@@ -74,7 +74,7 @@ Use a simple, researcher-facing single screen. The normal path must be understan
 | Calibration invalid / sensor unreliable | Clear warning | Recalibrate | Do not mark outgoing data as calibrated |
 | Bluetooth unavailable | Clear system-setting guidance | Retry | No advertising |
 
-The UI must display, at minimum: motion-permission status, Bluetooth state, calibration state, connected central count, effective sampling/transmit rate, last notification age, and a developer-only compact sensor diagnostic. It must not show or store location.
+Main displays truthful short connection/stream/calibration state and Calibrate. Details contains Bluetooth state, central count, enqueue rate/count (not Windows acknowledgments), last notification age, errors and sensor diagnostics. No location display/storage.
 
 ## 6. Core Motion implementation requirements
 
@@ -94,7 +94,8 @@ The UI must display, at minimum: motion-permission status, Bluetooth state, cali
 - Start advertising only after `CBManagerState.poweredOn` and after services have been added.
 - Respect `peripheralManagerIsReady(toUpdateSubscribers:)`. If `updateValue` returns `false`, discard stale frames and send the most recent current frame when ready; do not buffer a long queue.
 - When there are no subscribed centrals, keep advertising but do not treat this as a sensor or calibration failure.
-- Reset stream sequence/session state only at a deliberate new stream/calibration boundary; do not reset it on every subscriber change.
+- Calibration or zero/nonzero subscriber transition starts a new stream with sequence/time reset. Do not reset an ongoing stream when an extra subscriber joins/leaves. Multi-receiver behavior is not a v1 support claim.
+- Never reuse a timestamp or cached sample older than 100 ms. Clear accepted frames; expire flow-controlled frames before retry.
 - Treat app backgrounding, Bluetooth state loss, and subscriber loss as observable lifecycle events. Background behavior is an engineering test item, not an assumed v1 guarantee.
 
 The app needs an `NSBluetoothAlwaysUsageDescription` string that accurately explains that Bluetooth sends local sensor data to the nearby Windows MotionCue app. The v1 app declares the `bluetooth-peripheral` background mode so an already subscribed Windows central can remain connected while the phone is locked. This does not guarantee the 25 Hz application timer or Core Motion delivery while locked; iOS decides when background execution is available.

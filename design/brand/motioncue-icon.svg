@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="background" x2="0.85" y2="1">
+      <stop stop-color="#7471F4"/>
+      <stop offset="1" stop-color="#5155D9"/>
+    </linearGradient>
+    <linearGradient id="dot" x2="0.5" y2="1">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#E2E0FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="0" fill="url(#background)"/>
+  <path d="M154 536 H234 C270 536 288 464 311 464 C333 464 344 560 369 560
+           C391 560 451 284 479 284 C507 284 531 733 566 733
+           C604 733 647 464 679 464 C707 464 725 536 765 536 H870"
+        fill="none" stroke="#FFFFFF" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="520" cy="520" r="45" fill="url(#dot)"/>
+</svg>

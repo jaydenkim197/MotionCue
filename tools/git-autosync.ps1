@@ -32,11 +32,17 @@ try {
         throw "No Git repository at $RepositoryRoot."
     }
 
-    $gitDirectory = Join-Path $RepositoryRoot '.git'
-    $inProgress = @('MERGE_HEAD', 'REBASE_HEAD', 'CHERRY_PICK_HEAD', 'rebase-merge', 'rebase-apply', 'index.lock') |
+    $gitDirectory = (& git -C $RepositoryRoot rev-parse --path-format=absolute --git-dir).Trim()
+    if ($LASTEXITCODE -ne 0) { throw 'Unable to locate the Git directory.' }
+    # REBASE_HEAD may remain after a completed rebase; use the active directories.
+    $inProgress = @('MERGE_HEAD', 'CHERRY_PICK_HEAD', 'REVERT_HEAD', 'rebase-merge', 'rebase-apply', 'index.lock') |
         Where-Object { Test-Path -LiteralPath (Join-Path $gitDirectory $_) }
     if ($inProgress) {
         Write-AutosyncLog "PAUSED: Git operation in progress ($($inProgress -join ', ')). Resolve it manually; no files were changed."
+        exit 2
+    }
+    if ((& git -C $RepositoryRoot branch --show-current).Trim() -ne 'main') {
+        Write-AutosyncLog 'PAUSED: completion-sync requires main; no files were changed.'
         exit 2
     }
 

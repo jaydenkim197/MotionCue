@@ -12,7 +12,7 @@ The reusable [Development documentation skillbook](docs/reusable-development-doc
 
 The coordinate-free phone protocol is specified in [SensorFrame v1](docs/sensorframe-v1.md). The English ICCV-style thesis source is under [paper](paper/README.md), with the current rendered draft at [MotionCue thesis draft](output/pdf/MotionCue_thesis_draft.pdf).
 
-The next implementation boundary—iPhone Core Motion acquisition, vehicle-axis calibration, and BLE Peripheral transmission—is defined in [iOS transmitter implementation specification](docs/ios-transmitter-implementation-spec.md). For moving work to the Mac, use [Mac Codex context package](docs/mac-codex-context.md).
+The implemented iPhone transmitter contract is defined in [iOS transmitter implementation specification](docs/ios-transmitter-implementation-spec.md). Use [pre-field-test readiness](docs/pre-field-test-readiness.md) for the current release gates and Windows handoff. The [Mac Codex context package](docs/mac-codex-context.md) preserves the original setup context.
 
 > MotionCue is not a medical device and does not claim to prevent or treat motion sickness.
 
@@ -35,7 +35,14 @@ All processing is local. There is no account, backend, telemetry, analytics, loc
 
 ## Build
 
-The repository contains a project-local SDK in `.tools/dotnet8` for this workspace. To use another .NET 8 SDK, replace the executable path below.
+The Windows workspace may contain an ignored project-local SDK in `.tools/dotnet8`; Git does not transfer it. Install/use a .NET 8 SDK if it is absent. The release helper selects the local SDK or `dotnet` on PATH:
+
+```powershell
+git pull --ff-only
+powershell -ExecutionPolicy Bypass -File .\tools\build-windows-release.ps1
+```
+
+For individual build steps:
 
 ```powershell
 .\.tools\dotnet8\dotnet.exe restore MotionCue.sln

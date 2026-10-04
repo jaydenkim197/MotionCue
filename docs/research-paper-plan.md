@@ -192,13 +192,13 @@ macOS용 구현은 본 실험 범위에서 제외한다. MacBook Air M1은 Windo
 10. ⬜ 조건 순서 생성과 연구자 눈가림(blinding) 기능
 11. ⬜ 프레임 시간·CPU·메모리 성능 로깅
 12. ✅ 공통 SensorFrame v1 바이너리 프로토콜·코덱·스트림 안전 감시
-13. 🟨 Windows BLE service 광고 scan, GATT 수신, UI·MotionController·차량축 estimator 연결 완료; 실제 송신폰 검증은 미완료
+13. ✅ Windows BLE/estimator 및 실제 iPhone 25 Hz 연동(2026-08-24); 0.2.0 bench/실차 정량 검증은 별도
 14. ⬜ Android IMU + BLE 송신 앱
-15. ⬜ iPhone Core Motion + BLE 송신 앱
+15. ✅ iPhone Core Motion + BLE 구현; 0.2.0 freshness/복구 보강, 잠금 연속 송신 및 실차 품질 미검증
 16. ⏸️ 로컬 Wi-Fi 보조 전송: BLE 실측이 기준을 충족하지 못할 때만 재개
-17. ⬜ 차량축 교정 UI와 거치 오류 검출
+17. 🟨 iOS 보정·단절/정지/화면 위 거치·orientation jump 가드 구현; 실제 전방 alignment/주행 방향 검증 필요
 18. ✅ `Static Visual Control / Synchronized Cue` Research Mode 조건
-19. ⬜ 무선 지연·지터·손실·재연결 로그
+19. 🟨 Windows 간격 p50/p95/max/지터·gap 진단 구현; 시험 기록·동기화 latency·재연결 실측 미완료
 20. ⬜ 앱 계층 페어링 인증·암호화
 
 ## 11. 영향 분석
@@ -235,12 +235,12 @@ macOS용 구현은 본 실험 범위에서 제외한다. MacBook Air M1은 Windo
 ## 13. 바로 다음 단계
 
 1. ✅ 공통 SensorFrame, Windows BLE 수신, 차량축 estimator, Settings 연결, 가상 replay와 dropout 중립화를 구현·검증했다.
-2. Windows Bluetooth radio를 준비 상태로 전환한 뒤 nearby service scan을 재확인한다.
-3. M1 MacBook과 Xcode에서 iPhone 16 Pro용 Core Motion/BLE 송신 앱을 구현·서명한다.
+2. Windows source pull 후 0.2.0 EXE publish. Source pull은 ignored 기존 EXE를 갱신하지 않는다.
+3. iPhone 0.2.0 서명·설치 후 [시험 전 gate](pre-field-test-readiness.md)의 foreground/잠금/재연결 bench를 통과한다.
 4. iPhone 실기기에서 BLE 지연·손실·재연결·축 방향을 측정한다.
 5. Android IMU 송신 앱을 구현해 Galaxy A50 호환성을 비교한다.
 6. 로컬 Wi-Fi 보조 전송은 BLE 측정이 필요성을 보일 때만 구현한다. 현재 논문 핵심 평가 범위에는 포함하지 않는다.
 7. ✅ `No Cue / Static Visual Control / Synchronized Cue` Research Mode를 구현했다. 차량 파일럿 전 실제 Phone IMU로 세 조건을 QA한다.
 8. Study A의 기준 IMU 동기화 주행을 먼저 수행한다.
 9. 결과를 바탕으로 사용자 실험 자극 세기와 승용차 노선·주행 시간을 확정한다.
-10. 파일럿 6~10명 후 본 실험 30명과 연구계획 사전등록을 진행한다.
+10. 모집 전 심의/면제 등 절차, 동의·중단·회복·데이터 관리와 프로토콜/사전등록을 확정하고 참가자 파일럿 6~10명 후 본 실험 30명 진행.

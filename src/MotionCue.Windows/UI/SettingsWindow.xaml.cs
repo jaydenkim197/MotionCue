@@ -35,6 +35,8 @@ public partial class SettingsWindow : Window
         _controller = controller;
         _research = research;
         InitializeComponent();
+        var version = typeof(SettingsWindow).Assembly.GetName().Version;
+        VersionText.Text = $"MotionCue {version?.ToString(3) ?? "unknown"} · pilot";
         LoadSettings();
         _controller.SourceStatusChanged += Controller_SourceStatusChanged;
         _controller.StateChanged += Controller_StateChanged;
