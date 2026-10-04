@@ -23,6 +23,18 @@
 
 ---
 
+## 2026-10-04 23:12 KST — build 5 서명 완료·iPhone 설치/실행 확인
+
+상태: Release 서명/실기기 설치/정상 launch `VERIFIED`; 새 보정·Windows 수신 및 잠금 실측 대기. **잠금 문제 해결 완료/G1 통과 아님**.
+
+- 사용자가 서명 요청창을 열어 달라고 요청했다. 앞선 22:28의 서명 대기 상태와 달리 이번 확인에서는 기존 build job이 exit 0/`BUILD SUCCEEDED`로 종료됐고, `codesign --verify --deep --strict`가 통과했다. 대기 중인 codesign/xcodebuild/SecurityAgent 프로세스가 없었다. 누가 언제 허용했는지는 확인하지 않았으며 완료된 서명을 다시 요구하거나 키체인 암호·보안 설정을 조작하지 않았다.
+- source `e1ac090`의 0.2.0/build 5 설치 성공, 기기 app inventory의 **0.2.0 (5)** 및 debugger/console 없는 정상 launch 성공을 확인했다. 현재 추가 서명 허용은 필요하지 않다. 설치/launch 원본은 ignored `artifacts/ios-build5-install.json`, `ios-build5-app-inventory.json`, `ios-build5-launch.json`에 보관한다.
+- 새 설치 전에 MotionCue의 명명된 runtime 파일 2개를 `artifacts/ios-runtime-20261004-230749-q7lWyU`에 추가 회수했다. 기기 로그를 삭제하지 않았고, raw 로그·기기 식별 정보가 포함된 artifacts는 Git에 올리지 않는다. 이번 회수를 build 5 잠금 시험 결과로 사용하지 않는다.
+- 시작 시 Mac/GitHub main은 `e1ac090`으로 동일하고 worktree clean이었다. 이번에는 코드/Windows EXE/프로토콜/필터 변경 없이 배포 상태 문서만 갱신한다. 기존 Simulator 42/42 결과는 유지하되 실제 잠금 rate 검증을 대체하지 않는다.
+- 다음 물리 단계: 정지 거치 후 Calibrate → Windows 실제 수신 → Details의 Locked session Start/Running 및 Frames 증가 → USB 없는 60초 잠금. 먼저 Start/foreground 상태를 확인한 뒤 잠금 시험을 진행한다. 재설치/프로세스 재시작 후 이전 보정을 유지한 것으로 간주하지 않는다.
+
+---
+
 ## 2026-10-04 22:21 KST — build 4 잠금 중 실행 지속/감속 확인 및 build 5 sample-driven 송신 후보
 
 상태: build 4 실제 background 실행 지속·rate 감속 `VERIFIED`; build 5 변경 `IMPLEMENTED`, 자동 검증/배포/잠금 재시험 진행 중. **해결 완료/G1 통과 아님**.

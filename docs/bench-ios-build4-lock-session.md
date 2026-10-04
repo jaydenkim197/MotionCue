@@ -6,6 +6,8 @@
 
 2026-10-04 배포 확인: iPhone 0.2.0 (4) Release build/strict signing/설치·정상 launch, Simulator 35/35 및 Core Release 30/30 통과. Start 후 Frames 증가 사용자 확인. 실제 iOS background/Windows 수신 시험은 아래 절차로 별도 검증한다.
 
+23:12 KST 후속 배포: source `e1ac090`의 **0.2.0 (5)** strict signing/설치·기기 inventory/일반 launch를 확인했다. 대기 중인 서명 요청은 없다. Simulator 42/42 통과이며 새 보정·foreground 수신/Start/잠금 rate는 아직 실측 전이다.
+
 ## build 4 실측과 build 5 후보
 
 - 22:00:16 Start/Running →22:01:18 background. 첫 세션은22:03:11 calibration invalid/세션중단. 고정 실패 종류를 저장하지 않던 build4 로그로는 원인을 확정할 수 없다. 거치 움직임 등 안전 guard를 제거하지 않는다.
@@ -13,7 +15,7 @@
 - 이후 observed Timer gap1.56/1.31/2.32 s 및 foreground/background 재전환이 있어 전체를 정확한5분 하나로 합산하지 않는다. 실행 유지와 안정적인25 Hz는 별도 조건이다.
 - build 5는 Main RunLoop Timer로 전송하지 않는다. Core Motion callback/acquisition timestamp에서25 Hz 기회를 생성하고 지연슬롯을 건너뛴다. 100 ms freshness/중복 차단/latest-only pending/거치 안전검사는 그대로다. Timer는1 Hz health/logging만 수행. Diagnostic acceleration display만 foreground10 Hz이며 송신은 별도다.
 - build 5 local tick metrics는 **sample-driven 송신 기회**의 간격이며 build3/4 Timer metrics와 의미가 다르다. Calibration invalid category 숫자와 종료 elapsed freeze도 추가. 원시센서/오류문자열 저장 없음.
-- Simulator **42/42** 통과; 실기기 서명/설치·새 잠금rate는 별도 확인한다. 자동 테스트나 build4 잠금 지속을 build5 실측 통과로 사용하지 않는다.
+- Simulator **42/42** 및 실기기 서명/설치·일반 launch 확인. 새 잠금rate는 별도 확인한다. 자동 테스트나 build4 잠금 지속을 build5 실측 통과로 사용하지 않는다.
 
 ## 달라진 점
 
