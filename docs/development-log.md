@@ -23,6 +23,21 @@
 
 ---
 
+## 2026-10-04 20:33 KST — build 3 보정 후 25 Hz 실제 enqueue 확인
+
+상태: iPhone 보정/foreground enqueue 진단 `VERIFIED`; 동시 Windows 수신 비교·G1 장시간/잠금 bench 미완료
+
+- 사용자가 Rate 약 **25 Hz**, Frames 약 **1500**이며 계속 증가한다고 보고했다. 실행 중 앱을 재시작·재설치하지 않고 MotionCue의 bounded runtime log만 회수했다. 증거는 ignored `artifacts/ios-runtime-20261004-203008-hgymZm/runtime.jsonl`에 보존한다.
+- 기기 로그에서 20:28:47 KST collecting → **20:28:48 calibrated**를 확인했다. 20:28:51–20:30:01의 summary 8개(약 **70.20초**)에서 queued **60 → 1813**(+1753), enqueue rate **24.99–25.13 Hz**, Windows centrals **1**, Fresh/화면 유지 모두 **1**을 확인했다.
+- 최근 250 간격의 summary별 CoreBluetooth enqueue p50은 **39.59–40.02 ms**, p95 **40.77–49.21 ms**였고, 해당 window max의 최대는 **135.39 ms**였다. Summary 시점의 sample age at enqueue는 **9.17–21.48 ms**, 누적 backpressure/pending drop은 모두 **0**이었다. 이 수치는 snapshot/window 통계이며 전체 프레임의 최소/최대 sample age나 Windows 수신 성공을 뜻하지 않는다.
+- 따라서 이번 짧은 foreground 표본에서 iPhone의 nominal 25 Hz 생성/enqueue 경로는 정상이다. 이전 Windows 수신 p50 약 58 ms와는 **다른 실행 시점**이므로 새 build가 Windows 간격을 개선했다거나 Bluetooth/Windows 지연 원인을 확정하지 않는다. 사용자에게 같은 현재 실행의 Windows p50/p95 및 accepted/missing/rejected screenshot을 요청했다. Windows callback source는 UI thread에 synchronous Invoke가 아니라 Post하므로 코드만으로 UI blocking을 58 ms의 원인이라고 단정하지 않는다.
+- 보정 **전** 20:28:26 background → 20:28:41 active 사이 약 **14.39초 observed Timer gap**과 복귀 직후 stale sample age 약 **1738 ms**/Fresh 0 → 1을 확인했다. 해당 구간 queued 0이었고 USB 상태/화면 잠금 여부가 통제되지 않았으므로 잠금 송신/구독 유지 bench 통과로 사용하지 않는다. 정확한 suspension 원인도 로그만으로 확정하지 않는다.
+- 시작 Mac/fetched GitHub main은 `112f0c5`로 같고 clean/ahead-behind 0/0이었다. 코드·filter·wire format·설치 앱 변경 없이 검증 로그/준비 상태만 갱신했다. 0.20 s smoothing은 유지한다.
+
+다음 순서: 동시 Windows reception 비교 → 정상 foreground 지속/스크롤 → USB 없이 60초·5분 잠금 및 해제 후 복구 → G1 30분/10회 재연결. 이번 약 70초 표본을 30분 또는 실차 검증으로 확대 해석하지 않는다.
+
+---
+
 ## 2026-10-04 20:17 KST — iPhone build 3 최신 소스 설치·실기기 runtime 로그 회수
 
 상태: 최신 Release 서명/설치/정상 실행/기기 로그 `VERIFIED`; 새 보정 후 실제 송신 및 G1 잠금·장시간 bench 대기
