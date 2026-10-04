@@ -23,6 +23,22 @@
 
 ---
 
+## 2026-10-04 18:17 KST — 최신 iOS Release 서명·설치 완료, 개발자 신뢰 확인 필요
+
+상태: 빌드/서명/설치 `VERIFIED`; 실기기 실행은 사용자 신뢰 확인 대기
+
+- 사용자 진행 요청 후 이전 codesign job 성공을 확인했다. 최종 RGB/no-alpha 아이콘까지 포함한 source `ed9dd81`을 다시 Release build했고 `BUILD SUCCEEDED` 및 `codesign --verify --deep --strict` 성공을 확인했다.
+- 연결된 iPhone 16 Pro/iOS 27.0.1에 `com.motioncue.sensor`를 기존 앱 위로 설치했다. 기기 app inventory에서 **0.2.0 / build 2**를 확인했다. 앱/인증서/프로필을 삭제하거나 인증 보안을 완화하지 않았다.
+- 정상 launch(debugger/console attach 없음)를 시도했지만 CoreDevice security 오류로 실패했다. 실제 iPhone screenshot에 **Untrusted Developer**가 표시되어, 기기 설정의 개발자 신뢰 확인이 남아 있음을 확인했다. 설치 성공을 앱 실행/센서/BLE 검증 성공으로 해석하지 않는다.
+- 앱 서명과 provisioning entitlement의 application/team identifier가 일치하고 Developer Mode가 Enabled임을 확인했다. 프로파일의 유효기간은 **2026-10-11 17:40 KST**다. 이후 시험에는 Mac에서 재서명/재설치가 필요하다.
+- 사용자에게 설정 → 일반 → VPN 및 기기 관리에서 MotionCueSensor가 표시된 개발자를 직접 확인·신뢰하도록 요청했다. 암호 입력/프로필 신뢰를 자동 수행하거나 우회하지 않았다. [Apple developer trust 안내](https://help.apple.com/xcode/mac/current/en.lproj/dev96a12fb84.html)
+- 새 코드/연구 조건/통신 형식 변경 없음. 시작 시 Mac/fetched GitHub main은 `ed9dd81`로 같았고 Windows 신규 remote commit은 없었다. Windows의 미push 로컬 파일과 실제 EXE 상태는 여전히 미확인이다.
+- 설치·launch JSON과 screenshot은 ignored `artifacts/`에 보존했다. 계정/기기 식별 정보가 포함된 원본 증거는 Git에 넣지 않는다.
+
+남은 순서: 개발자 신뢰 확인 → 앱 실행/보정/센서 확인 → 최신 Windows EXE의 Subscribed 확인 → G1 foreground/잠금/끊김·재연결 bench. 현재 실차 시작 조건을 충족했다고 표시하지 않는다.
+
+---
+
 ## 2026-10-04 — 시험 전 안정성 보강 및 waveform 브랜드 적용
 
 상태: 방향 `DECISION`, 코드/문서 `IMPLEMENTED`; 자동 검증 `VERIFIED`; 실기기 설치와 Windows 물리 bench는 별도
