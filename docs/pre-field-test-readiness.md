@@ -8,6 +8,8 @@
 
 Windows 실측 갱신(21:15–21:17 KST): foreground 약 47.3초에서 accepted +1182, **실제 수신 24.99 Hz**, missing/rejected 0, p50/p95 58.2/61.1 ms를 확인했다. 60초 목표를 넘어 82초 유지한 잠금 확인 구간에서는 BLE 구독은 유지됐지만 수신이 멈추고 timeout/큐 비표시가 관찰됐다. 잠금 해제 후 복구는 확인 중이다. Median 간격의 역수와 처리량은 다르며 one-way latency로 해석하지 않는다. [Windows bench 기록](bench-2026-10-04-windows-build3.md) 참조. G1 전체는 미통과다.
 
+복구 갱신(21:34–21:36 KST): 잠금 해제 후 MotionCue foreground에서 기존 BLE 구독으로 자동 수신/cue 복구를 확인했다. Scan/Connect/Calibrate 없이 **73.015초 +1825 frames = 24.99 Hz**, missing/rejected 0이다. 누적 약 18분 45초 공백은 사용자 해제 응답 대기로 길어진 시험 중단이며 recovery latency가 아니다. **잠금 연속 송신은 중단, foreground 자동 복구는 확인**이다. 정확한 60초/5분 trial·30분·10회 재연결/G1 전체는 완료되지 않았다.
+
 ## 목표 완성도
 
 **통제된 연구자 공학 파일럿에 사용할 안정적인 버전**을 만든다. App Store 수준, 모든 휴대폰 지원, 잠금 연속 송신 보장, 멀미 개선 효과 입증은 이번 구현 완료 기준이 아니다.

@@ -23,6 +23,18 @@
 
 ---
 
+## 2026-10-04 21:34–21:36 KST — iPhone 잠금 해제 후 기존 BLE 구독의 자동 복구 확인
+
+상태: foreground 자동 복구 `VERIFIED`; 잠금 연속 송신/정확한 복구 latency/G1 전체 미검증
+
+- 사용자 `해제됨` 확인 후 Windows screenshot의 `SensorFrame stream restored`, Diagnostics의 `Ready / Subscribed / Streaming` 및 cue visible을 확인했다. accepted **54194→54868** 증가를 관찰했다. Windows Scan/Connect/Calibrate, 앱 재실행 또는 연결 초기화 없이 복구됐다.
+- Windows 누적 max **1125403.4 ms (약 18분 45.4초)**는 사용자가 화면을 보지 않아 해제 응답이 늦어진 시험 중단 구간이다. 사용자 설명을 반영해 이를 unlock recovery latency나 일반 BLE 지연으로 해석하지 않는다. 정확한 60초 lock trial도 아니다.
+- 실제 수신 timestamp 21:35:14.1255161→21:36:27.1406626 KST **73.015초**에 accepted **55275→57100 (+1825)**, 평균 **24.9949 Hz**, missing/rejected **0/0**, 종료 p50/p95 **58.1/60.6 ms**를 확인했다. 가려진 창의 접근성 cache 지연을 피하기 위해 조회 시각 대신 진단의 Windows receipt timestamp로 처리량을 계산했다.
+- 복구 직후 긴 공백을 포함한 recent window의 jitter SD **29047.1 ms**는 새 interval로 window가 교체된 뒤 **27.8 ms**가 됐다. 누적 max와 recent-window 통계를 구분한다. Windows smoothing 0.20 s 및 protocol은 변경하지 않았다.
+- bench 보고서와 준비 상태를 갱신했다. Mac 후속은 build 3 runtime JSONL의 21:15~21:36 KST lifecycle/runtimeGap/summary 대조이며, unlock→최초 송신 시간은 iPhone 로그 추가 확인 전 미측정이다. 원본 로그는 ignored artifacts에만 보존한다.
+
+---
+
 ## 2026-10-04 21:15–21:17 KST — Windows 실제 25 Hz 수신 및 iPhone build 3 잠금 중단 관찰
 
 상태: foreground throughput/잠금 중단 `VERIFIED`; 잠금 해제 복구 확인 진행 중, G1 미완료
