@@ -12,6 +12,8 @@ Windows 실측 갱신(21:15–21:17 KST): foreground 약 47.3초에서 accepted 
 
 ## 목표 완성도
 
+잠금 대응 후보(build 4): `Details → Locked session → Start`로 iOS 26+ 공식 continued-processing 작업을 명시적으로 시작하는 유한 송신 세션을 추가했다. 45,000 fresh enqueue 목표(약 30분)/35분 hard limit이며 OS 승인·취소/실제 잠금 연속 송신은 실기기 확인이 필요하다. 무기한 송신이나 G1 통과를 의미하지 않는다. [검증 절차](bench-ios-build4-lock-session.md).
+
 **통제된 연구자 공학 파일럿에 사용할 안정적인 버전**을 만든다. App Store 수준, 모든 휴대폰 지원, 잠금 연속 송신 보장, 멀미 개선 효과 입증은 이번 구현 완료 기준이 아니다.
 
 - 유지: IMU 50 Hz → SensorFrame v1 42 bytes/BLE 25 Hz → Windows cue.
@@ -44,7 +46,7 @@ Windows 실측 갱신(21:15–21:17 KST): foreground 약 47.3초에서 accepted 
 6. 정차 상태 background/Bluetooth off/강제 종료: 마지막 Windows 수신 이후 250 ms neutral/1초 source timeout 확인. BLE 구독과 stream timeout은 다른 상태.
 7. 재연결 10회: 수동 Scan/Connect 후 10초 이내 새 프레임, 오래된 비중립 cue 재생 없음. Process 종료 후 재보정.
 8. 잠금 **60초/5분** 각 1회: 연결·보정 후 debugger 없이 USB를 뽑고 잠금. Subscribed 유지/송신 정지/해제 후 재연결 없는 복구를 따로 기록. build 3에서는 해제 후 앱 foreground 복귀 → Details의 Prepare logs로 summary를 남기고 Mac 재연결 후 로컬 진단을 회수한다. 로그의 runtimeGap과 Windows max gap을 비교하되, 서로 다른 시계 차이를 one-way latency로 사용하지 않는다.
-9. 멈춰도 stale 프레임을 새 프레임처럼 보내지 않음. 연속 송신이 필요하면 **Keep screen on** 사용. 잠금 연속 송신은 보장하지 않음.
+9. 멈춰도 stale 프레임을 새 프레임처럼 보내지 않음. build 4의 유한 Locked session은 Start/Running 확인 후 USB 없이 60초/5분 및 전체 목표·Stop/OS 취소를 따로 시험한다. 단순 Subscribed 유지가 아니라 Windows accepted 증가/Streaming/cue와 iOS fresh enqueue 증가가 필요하다. 아직 미통과이며 **Keep screen on + foreground**가 현재 확인된 fallback이다. 잠금 연속 송신은 보장하지 않음.
 10. Windows replay의 3조건/FMS/`Ctrl+Shift+F12`/정상·긴급 CSV 종료 record 재확인. Replay는 실제 축·지연 시험의 대체가 아님.
 
 BLE background mode는 지속 실행을 보장하지 않으며 restoration에는 service/characteristic 복구가 필요하다. [Apple background/restoration guide](https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/CoreBluetoothBackgroundProcessingForIOSApps/PerformingTasksWhileYourAppIsInTheBackground.html)

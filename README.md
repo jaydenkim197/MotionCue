@@ -72,7 +72,7 @@ The self-contained output does not require a separate .NET installation. Run `ar
 
 - Primary display only.
 - The Android companion transmitter is not implemented yet.
-- The iPhone transmitter is implemented, but lock/background behavior and quantitative vehicle timing still require physical validation.
+- The iPhone transmitter is implemented. Build 4 adds an experimental, user-started finite locked session (iOS 26+, 45,000 queued frames/about 30 minutes, 35-minute cap), but screen-off transmission and quantitative vehicle timing still require physical validation. See the [lock-session trial guide](docs/bench-ios-build4-lock-session.md).
 - Phone mounting and vehicle-axis calibration require physical validation.
 - Actual usefulness, cue timing, and distraction require physical field tests.
 - BLE timing and reconnection vary by phone and Windows Bluetooth hardware.

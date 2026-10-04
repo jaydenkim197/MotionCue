@@ -133,14 +133,37 @@ struct ContentView: View {
                         Text("Only while connected and calibrated. Recommended for the first vehicle test.")
                             .font(.caption)
                             .foregroundStyle(Color("TextMuted"))
-                        Label("Lock test pending", systemImage: "lock")
+                    }
+
+                    DetailCard(title: "Locked session") {
+                        Label(model.lockedSession.state.label, systemImage: "lock")
                             .font(.subheadline)
                             .foregroundStyle(Color("TextSecondary"))
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
-                        Text("Bluetooth background support is enabled, but iOS may pause motion updates. A locked phone is not yet a validated continuous sensor.")
+                        ProgressView(value: Double(model.lockedSession.frames), total: Double(model.lockedSession.goal))
+                        diagnosticRow("Frames", "\(model.lockedSession.frames) / \(model.lockedSession.goal)")
+                        if model.lockedSession.state.isBusy {
+                            Button("Stop") { model.stopLockedSession() }
+                                .buttonStyle(MotionCuePrimaryButtonStyle())
+                                .lineLimit(1)
+                                .fixedSize(horizontal: true, vertical: false)
+                        } else {
+                            Button("Start") { model.startLockedSession() }
+                                .buttonStyle(MotionCuePrimaryButtonStyle())
+                                .disabled(!model.canStartLockedSession)
+                                .lineLimit(1)
+                                .fixedSize(horizontal: true, vertical: false)
+                        }
+                        Text("Connect and calibrate, then Start. Sends 45,000 fresh frames (~30 min), with a 35 min limit. iOS shows progress and lets you cancel.")
                             .font(.caption)
                             .foregroundStyle(Color("TextMuted"))
+                        Text("Experimental: lock-screen transmission still needs testing. iOS may refuse or end the session. No automatic restart; unlock and Start again.")
+                            .font(.caption)
+                            .foregroundStyle(Color("TextMuted"))
+                        if let code = model.lockedSession.schedulerError {
+                            diagnosticRow("iOS task error", "\(code)")
+                        }
                     }
 
                     DetailCard(title: "Calibration") {
@@ -264,7 +287,8 @@ struct ContentView: View {
         if model.peripheralStatus.connectedCentrals > 0 {
             if !model.sampleIsFresh { return "No fresh data · check Details." }
             if !model.calibrationState.isCalibrated { return "Keep still, then Calibrate." }
-            return String(format: "Bluetooth queued · %.0f Hz", model.transmitRate)
+            return String(format: model.lockedSession.state == .running
+                ? "Session active · %.0f Hz" : "Bluetooth queued · %.0f Hz", model.transmitRate)
         }
         if !model.peripheralStatus.isPoweredOn { return "Check Bluetooth in Details." }
         if !model.motionAvailable { return "Check sensor access in Details." }

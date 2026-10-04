@@ -1,17 +1,46 @@
 import Foundation
 
 enum RuntimeEvent: String, Codable {
-    case launch, lifecycle, calibration, motion, bluetooth, stream, runtimeGap, summary
+    case launch, lifecycle, calibration, motion, bluetooth, stream, runtimeGap, summary, sensorSession
 }
 
 enum RuntimeState: String, Codable {
     case active, inactive, background, ready, collecting, calibrated, invalid, available, unavailable
+    case sessionIdle, sessionRequested, sessionRunning, sessionCompleted, sessionStopped, sessionExpired
+    case sessionDenied, sessionInterrupted, sessionTimedOut, sessionUnsupported
 }
 
 enum RuntimeMetric: String {
     case build, centrals, powered, advertising, queued, dropped, sampleAgeMs, fresh, rateHz
     case ticks, tickP50Ms, tickP95Ms, tickMaxMs, gapMs, screenAwake, errorPresent
     case queueP50Ms, queueP95Ms, queueMaxMs, queueSampleAgeMs, backpressure
+    case sessionFrames, sessionGoal, sessionElapsedSeconds, schedulerError
+}
+
+extension SensorSessionState {
+    var runtimeState: RuntimeState {
+        switch self {
+        case .idle: .sessionIdle
+        case .requested: .sessionRequested
+        case .running: .sessionRunning
+        case .completed: .sessionCompleted
+        case .stopped: .sessionStopped
+        case .expired: .sessionExpired
+        case .denied: .sessionDenied
+        case .interrupted: .sessionInterrupted
+        case .timedOut: .sessionTimedOut
+        case .unsupported: .sessionUnsupported
+        }
+    }
+}
+
+extension SensorSessionSnapshot {
+    var runtimeMetrics: [RuntimeMetric: Double] {
+        var result: [RuntimeMetric: Double] = [.sessionFrames: Double(frames), .sessionGoal: Double(goal),
+            .sessionElapsedSeconds: Double(elapsedSeconds)]
+        if let schedulerError { result[.schedulerError] = Double(schedulerError) }
+        return result
+    }
 }
 
 struct RuntimeRecord: Codable {

@@ -27,6 +27,11 @@
     <key>UIBackgroundModes</key>
     <array>
         <string>bluetooth-peripheral</string>
+        <string>processing</string>
+    </array>
+    <key>BGTaskSchedulerPermittedIdentifiers</key>
+    <array>
+        <string>com.motioncue.sensor.lock-session.*</string>
     </array>
     <key>UILaunchScreen</key>
     <dict/>

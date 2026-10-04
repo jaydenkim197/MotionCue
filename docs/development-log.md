@@ -23,6 +23,23 @@
 
 ---
 
+## 2026-10-04 21:48 KST — 잠금 중 센서 송신 중단 원인 확인 및 유한 background 세션 후보 구현
+
+상태: 원인 대조 `VERIFIED`; iOS background 세션 후보 `IMPLEMENTED`; 빌드/자동 테스트/실기기 잠금 검증 진행 중
+
+- 사용자 요청으로 GitHub `095bd6b`, `baeb53f`의 Windows bench 기록을 fast-forward pull했다. 기존 자동 복구는 확인됐으므로 BLE 재연결을 원인으로 오진하지 않는다. 화면 잠금/USB 분리 시험이며 휴대폰 전원 종료가 아니다. 전원이 꺼진 iPhone은 센서/BLE 송신 불가다.
+- MotionCue 앱의 기존 bounded runtime log만 회수했다: ignored `artifacts/ios-runtime-20261004-214011-4ICH7k/runtime.jsonl`. 21:15:45 background 이후 queued 52510→52514까지만, 다음 기록은 21:34:31 runtimeGap/fresh 0→1, 21:34:32 active/centrals 1이었다. iPhone enqueue 수와 Windows accepted는 서로 다른 카운터다. `systemUptime` gap 약 203.9 s는 wall-clock 약 18분 46초와 다르므로 screen-off 기간 또는 recovery latency로 사용하지 않는다. 깊은 sleep을 포함하는 duration에는 별도 ContinuousClock을 사용한다.
+- Apple DTS는 Core Motion 자체가 앱에 background 실행 시간을 주지 않으며, 앱이 실행 중이면 motion delivery는 가능하다고 설명한다. 위치를 쓰지 않는 앱에 location background mode를 추가하는 방식을 채택하지 않는다. [Apple DTS 설명](https://developer.apple.com/forums/thread/841001).
+- iOS 26+ `BGContinuedProcessingTask`의 user-started finite job/실제 progress/cancel/expiration 경로를 후보로 추가했다. 이는 **무기한 잠금 송신 보장 또는 실측 통과가 아니다**. 45,000 fresh frames의 실제 CoreBluetooth enqueue가 목표(25 Hz에서 약 30분), sleep을 포함한 hard limit 35분이며 연결/보정 상실·5초 이상 progress 없음·사용자 Stop·OS expiration 시 종료한다. 작업은 foreground Start 탭으로만 시작한다. 자동 재시작/작업 체이닝/시간만으로 가짜 진행률을 표시하지 않는다.
+- Details → Locked session에 Start/Stop/상태/실제 frame progress를 배치했다. 기본 화면의 짧은 hint 외에 큰 설명/카드를 추가하지 않았다. 시스템 progress UI는 BackgroundTasks가 제공하며 Live Activity만으로 센서 실행을 보장한다고 주장하지 않는다. `processing` background mode 및 task identifier prefix만 추가; audio/location/HealthKit/GPU entitlement 및 raw IMU 저장은 없다.
+- iOS 27 비동기 submission을 off-main에서 호출하며 26 fallback을 유지한다. 동적 exact handler, 중복 Start/늦은 callback/종료 뒤 progress 방지, 10초 launch timeout 및 종료 시 pending frame 삭제를 포함했다. background 작업 종료 후 foreground 복귀 전까지 추가 송신을 차단하고 기존 Windows stale/watchdog가 neutral/timeout 처리하도록 한다. 센서 frame v1, nominal 50→25 Hz, Windows 코드/0.20 s smoothing은 그대로다.
+- 근거: [Apple long-running task 문서](https://developer.apple.com/documentation/backgroundtasks/performing-long-running-tasks-on-ios-and-ipados), [BGContinuedProcessingTask](https://developer.apple.com/documentation/backgroundtasks/bgcontinuedprocessingtask), [WWDC25](https://developer.apple.com/videos/play/wwdc2025/227/), 설치된 iOS 27 SDK BackgroundTasks headers. 문서는 일반 background CPU/sensor analysis와 종료 조건을 설명하며 locked CoreMotion/BLE의 이 장비 25 Hz 보장은 하지 않는다. 실제 무디버거·USB 분리·60초/5분 잠금 시험이 필요하다.
+- 검증 중 발견한 project Debug/Release 설정 누락을 복구하고 iOS 0.2.0/build 4로 갱신했다. SDK Swift API error-domain 명칭을 수정했으며 Objective-C request는 foreground에서 구성한 뒤 worker에 단일 handoff한다. Start 때 기존 pending/callback generation을 reset해 이전 프레임을 새 세션 progress로 세지 않는다. 새 coordinator 테스트 12개는 explicit start/중복/실제 enqueue progress/성공·중단/continuous deadline/no-progress/launch timeout/늦은 callback/오류·unsupported/throttling을 다룬다. 실제 iOS scheduler/BLE/잠금 성공을 fake scheduler 테스트로 대체하지 않는다.
+- 21:57–22:00 KST 후속 검증: iOS Simulator **35/35**(기존 23 + 새 12) 및 .NET Core Release **30/30** 통과. 기기 Release build/strict codesign 검증 성공, iPhone inventory **0.2.0 (4)** 설치 및 debugger/console 없는 정상 launch를 확인했다. AppIntents 미사용 metadata-skip warning만 있으며 Swift compile 오류 없음. `git diff --check`/plist lint 통과. 메인 screenshot에서 Connected/Calibrated/약25 Hz, 앱 로그에서 fresh/구독1을 확인했다. 원본은 ignored `artifacts/ios-build4-*`, `artifacts/ios-test-locked-session`, `artifacts/ios-runtime-20261004-220009-MEpsF1`에 보관한다.
+- 사용자가 Locked session Start 이후 Frames 증가를 보고했다. 정확한 running/background 여부는 로그 대조 전이며, USB 분리·60초 잠금 중 Windows accepted 지속 증가와 해제 후 iPhone 기록을 요청했다. 5분/전체 세션/시스템 cancel/G1은 미검증이다. 절차를 `docs/bench-ios-build4-lock-session.md`, spec/readiness/README에 반영했다. Windows 소스/EXE는 바꾸지 않았으며 이번 iOS-only 배포 때문에 EXE 재빌드할 필요는 없다.
+
+---
+
 ## 2026-10-04 21:34–21:36 KST — iPhone 잠금 해제 후 기존 BLE 구독의 자동 복구 확인
 
 상태: foreground 자동 복구 `VERIFIED`; 잠금 연속 송신/정확한 복구 latency/G1 전체 미검증

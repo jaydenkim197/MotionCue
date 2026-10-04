@@ -13,6 +13,7 @@ final class AppModel: ObservableObject {
     @Published private(set) var statusMessage = "Keep the mounted phone still for calibration."
     @Published private(set) var diagnosticExportURL: URL?
     @Published private(set) var diagnosticExportFailed = false
+    @Published private(set) var lockedSession = SensorSessionSnapshot()
     @Published var keepScreenAwake: Bool {
         didSet {
             UserDefaults.standard.set(keepScreenAwake, forKey: "keepScreenAwake")
@@ -25,6 +26,8 @@ final class AppModel: ObservableObject {
     private let calibrator = VehicleAxisCalibrator()
     private let peripheral = PeripheralService()
     private let diagnostics = RuntimeDiagnostics()
+    private let sensorSession = LockedSensorSession()
+    private var backgroundTransmissionBlocked = false
     private var transmitTimer: Timer?
     private var freshness = SampleFreshnessGate()
     private var sessionStart: TimeInterval?
@@ -68,11 +71,26 @@ final class AppModel: ObservableObject {
                               .advertising: status.isAdvertising ? 1 : 0, .errorPresent: status.lastError == nil ? 0 : 1]))
             }
             self.peripheralStatus = status
+            if !status.isPoweredOn || status.connectedCentrals == 0 { self.sensorSession.interrupt() }
             self.updateIdleTimer()
         }
         peripheral.onFrameQueued = { [weak self] session in
             guard let self, session == self.session else { return }
             self.clockResetPending = false
+            self.sensorSession.frameQueued()
+        }
+        sensorSession.onUpdate = { [weak self] snapshot in
+            guard let self else { return }
+            if snapshot.state != self.lockedSession.state {
+                self.diagnostics.record(RuntimeRecord(event: .sensorSession,
+                    state: snapshot.state.runtimeState, metrics: snapshot.runtimeMetrics))
+            }
+            self.lockedSession = snapshot
+        }
+        sensorSession.onEnd = { [weak self] in
+            guard let self else { return }
+            self.peripheral.clearPending()
+            self.backgroundTransmissionBlocked = !self.isForeground
         }
         diagnostics.record(RuntimeRecord(event: .launch, metrics: [
             .build: Double(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0") ?? 0]))
@@ -98,6 +116,7 @@ final class AppModel: ObservableObject {
             statusMessage = "No fresh motion data. Check permissions in iOS Settings."
             return
         }
+        sensorSession.interrupt()
         calibrator.begin()
         calibrationState = calibrator.state
         resetTransmission()
@@ -108,10 +127,26 @@ final class AppModel: ObservableObject {
 
     func setAdvertising(_ enabled: Bool) { peripheral.setAdvertisingEnabled(enabled) }
 
+    var canStartLockedSession: Bool {
+        isForeground && calibrationState.isCalibrated && sampleIsFresh
+            && peripheralStatus.isPoweredOn && peripheralStatus.connectedCentrals > 0
+            && !lockedSession.state.isBusy
+    }
+
+    func startLockedSession() {
+        guard canStartLockedSession else { return }
+        backgroundTransmissionBlocked = false
+        resetTransmission()
+        sensorSession.start(eligible: true)
+    }
+
+    func stopLockedSession() { sensorSession.stop() }
+
     func handleScenePhase(_ phase: ScenePhase) {
         switch phase {
         case .active:
             isForeground = true
+            backgroundTransmissionBlocked = false
             runtimeState = .active
             motionProvider.start()
             peripheral.setApplicationBackgrounded(false)
@@ -146,6 +181,7 @@ final class AppModel: ObservableObject {
             .queueMaxMs: peripheralStatus.queueMaxMs, .queueSampleAgeMs: peripheralStatus.queueSampleAgeMs,
             .backpressure: Double(peripheralStatus.backpressureCount)
         ], uniquingKeysWith: { _, new in new })
+        metrics.merge(sensorSession.snapshot.runtimeMetrics, uniquingKeysWith: { _, new in new })
         if let sample = motionProvider.currentSample() {
             metrics[.sampleAgeMs] = max(0, (ProcessInfo.processInfo.systemUptime - sample.timestamp) * 1_000)
         }
@@ -209,6 +245,9 @@ final class AppModel: ObservableObject {
             sampleIsFresh = fresh
             diagnostics.record(RuntimeRecord(event: .stream, state: runtimeState, metrics: [.fresh: fresh ? 1 : 0]))
         }
+        sensorSession.pulse(streamEligible: calibrationState.isCalibrated && peripheralStatus.isPoweredOn
+            && peripheralStatus.connectedCentrals > 0)
+        guard !backgroundTransmissionBlocked else { peripheral.clearPending(); return }
         guard sampleIsFresh, let sample else {
             peripheral.clearPending()
             return
@@ -221,6 +260,7 @@ final class AppModel: ObservableObject {
         guard let frame = calibrator.frame(from: sample, sequence: sequence,
             elapsedMilliseconds: elapsed, sessionReset: clockResetPending) else {
             calibrationState = calibrator.state
+            sensorSession.interrupt()
             peripheral.clearPending()
             if case .invalid(let reason) = calibrationState { statusMessage = reason }
             diagnostics.record(RuntimeRecord(event: .calibration, state: .invalid))
