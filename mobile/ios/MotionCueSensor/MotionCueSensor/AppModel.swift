@@ -11,6 +11,8 @@ final class AppModel: ObservableObject {
     @Published private(set) var latestAcceleration = SensorVector(x: 0, y: 0, z: 0)
     @Published private(set) var transmitRate = 0.0
     @Published private(set) var statusMessage = "Keep the mounted phone still for calibration."
+    @Published private(set) var diagnosticExportURL: URL?
+    @Published private(set) var diagnosticExportFailed = false
     @Published var keepScreenAwake: Bool {
         didSet {
             UserDefaults.standard.set(keepScreenAwake, forKey: "keepScreenAwake")
@@ -22,6 +24,7 @@ final class AppModel: ObservableObject {
     private let motionProvider = DeviceMotionProvider()
     private let calibrator = VehicleAxisCalibrator()
     private let peripheral = PeripheralService()
+    private let diagnostics = RuntimeDiagnostics()
     private var transmitTimer: Timer?
     private var freshness = SampleFreshnessGate()
     private var sessionStart: TimeInterval?
@@ -31,11 +34,19 @@ final class AppModel: ObservableObject {
     private var rateWindowStart = ProcessInfo.processInfo.systemUptime
     private var rateWindowCount = 0
     private var isForeground = true
+    private var runtimeState: RuntimeState = .active
+    private var tickWindow = RuntimeTickWindow()
+    private var lastSummary = ProcessInfo.processInfo.systemUptime
 
     init() {
         keepScreenAwake = UserDefaults.standard.object(forKey: "keepScreenAwake") as? Bool ?? true
         motionProvider.onAvailabilityChanged = { [weak self] available in
-            DispatchQueue.main.async { self?.motionAvailable = available }
+            DispatchQueue.main.async {
+                guard let self, self.motionAvailable != available else { return }
+                self.motionAvailable = available
+                self.diagnostics.record(RuntimeRecord(event: .motion,
+                    state: available ? .available : .unavailable))
+            }
         }
         motionProvider.onError = { [weak self] message in
             DispatchQueue.main.async { self?.statusMessage = message }
@@ -48,6 +59,14 @@ final class AppModel: ObservableObject {
             if (status.connectedCentrals > 0) != (self.peripheralStatus.connectedCentrals > 0) {
                 self.resetTransmission()
             }
+            let old = self.peripheralStatus
+            if status.connectedCentrals != old.connectedCentrals || status.isPoweredOn != old.isPoweredOn
+                || status.isAdvertising != old.isAdvertising || status.applicationState != old.applicationState
+                || status.lastError != old.lastError {
+                self.diagnostics.record(RuntimeRecord(event: .bluetooth, state: self.runtimeState,
+                    metrics: [.centrals: Double(status.connectedCentrals), .powered: status.isPoweredOn ? 1 : 0,
+                              .advertising: status.isAdvertising ? 1 : 0, .errorPresent: status.lastError == nil ? 0 : 1]))
+            }
             self.peripheralStatus = status
             self.updateIdleTimer()
         }
@@ -55,14 +74,23 @@ final class AppModel: ObservableObject {
             guard let self, session == self.session else { return }
             self.clockResetPending = false
         }
+        diagnostics.record(RuntimeRecord(event: .launch, metrics: [
+            .build: Double(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0") ?? 0]))
     }
 
     func start() {
         guard transmitTimer == nil else { return }
         motionProvider.start()
-        transmitTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 25.0, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.transmitLatest() }
+        transmitTimer = Self.installTransmitTimer { [weak self] in self?.transmitLatest() }
+    }
+
+    static func installTransmitTimer(action: @escaping @MainActor () -> Void) -> Timer {
+        let timer = Timer(timeInterval: 1.0 / 25.0, repeats: true) { _ in
+            // The timer is installed only on the main run loop. Avoid an extra queued Task per tick.
+            MainActor.assumeIsolated { action() }
         }
+        RunLoop.main.add(timer, forMode: .common)
+        return timer
     }
 
     func calibrate() {
@@ -75,6 +103,7 @@ final class AppModel: ObservableObject {
         resetTransmission()
         updateIdleTimer()
         statusMessage = "Keep the mounted phone and vehicle still for one second."
+        diagnostics.record(RuntimeRecord(event: .calibration, state: .collecting))
     }
 
     func setAdvertising(_ enabled: Bool) { peripheral.setAdvertisingEnabled(enabled) }
@@ -83,16 +112,49 @@ final class AppModel: ObservableObject {
         switch phase {
         case .active:
             isForeground = true
+            runtimeState = .active
             motionProvider.start()
             peripheral.setApplicationBackgrounded(false)
         case .background:
             isForeground = false
+            runtimeState = .background
             peripheral.setApplicationBackgrounded(true)
         case .inactive:
             isForeground = false
+            runtimeState = .inactive
         @unknown default: break
         }
         updateIdleTimer()
+        diagnostics.record(RuntimeRecord(event: .lifecycle, state: runtimeState, metrics: runtimeMetrics()))
+    }
+
+    func prepareDiagnosticExport() async {
+        recordSummary()
+        do {
+            diagnosticExportURL = try await diagnostics.export()
+            diagnosticExportFailed = false
+        } catch { diagnosticExportFailed = true }
+    }
+
+    private func runtimeMetrics() -> [RuntimeMetric: Double] {
+        var metrics = tickWindow.metrics
+        metrics.merge([
+            .centrals: Double(peripheralStatus.connectedCentrals), .queued: Double(sentFrameCount),
+            .dropped: Double(peripheralStatus.droppedFrameCount), .fresh: sampleIsFresh ? 1 : 0,
+            .rateHz: transmitRate, .screenAwake: UIApplication.shared.isIdleTimerDisabled ? 1 : 0,
+            .queueP50Ms: peripheralStatus.queueP50Ms, .queueP95Ms: peripheralStatus.queueP95Ms,
+            .queueMaxMs: peripheralStatus.queueMaxMs, .queueSampleAgeMs: peripheralStatus.queueSampleAgeMs,
+            .backpressure: Double(peripheralStatus.backpressureCount)
+        ], uniquingKeysWith: { _, new in new })
+        if let sample = motionProvider.currentSample() {
+            metrics[.sampleAgeMs] = max(0, (ProcessInfo.processInfo.systemUptime - sample.timestamp) * 1_000)
+        }
+        return metrics
+    }
+
+    private func recordSummary() {
+        diagnostics.record(RuntimeRecord(event: .summary, state: runtimeState, metrics: runtimeMetrics()))
+        lastSummary = ProcessInfo.processInfo.systemUptime
     }
 
     private func updateIdleTimer() {
@@ -117,7 +179,10 @@ final class AppModel: ObservableObject {
             case .calibrated:
                 resetTransmission()
                 statusMessage = "Calibration complete."
-            case .invalid(let reason): statusMessage = reason
+                diagnostics.record(RuntimeRecord(event: .calibration, state: .calibrated))
+            case .invalid(let reason):
+                statusMessage = reason
+                diagnostics.record(RuntimeRecord(event: .calibration, state: .invalid))
             default: break
             }
             updateIdleTimer()
@@ -126,6 +191,10 @@ final class AppModel: ObservableObject {
 
     private func transmitLatest() {
         let now = ProcessInfo.processInfo.systemUptime
+        if let gap = tickWindow.tick(now), gap >= 250 {
+            diagnostics.record(RuntimeRecord(event: .runtimeGap, state: runtimeState, metrics: [.gapMs: gap]))
+        }
+        if now - lastSummary >= 10 { recordSummary() }
         let rateElapsed = now - rateWindowStart
         if rateElapsed >= 1 {
             transmitRate = Double(sentFrameCount - rateWindowCount) / rateElapsed
@@ -133,9 +202,13 @@ final class AppModel: ObservableObject {
             rateWindowStart = now
         }
         let sample = motionProvider.currentSample()
-        sampleIsFresh = sample.map {
+        let fresh = sample.map {
             $0.isReliable && SampleFreshnessGate.isFresh(timestamp: $0.timestamp, now: now)
         } ?? false
+        if fresh != sampleIsFresh {
+            sampleIsFresh = fresh
+            diagnostics.record(RuntimeRecord(event: .stream, state: runtimeState, metrics: [.fresh: fresh ? 1 : 0]))
+        }
         guard sampleIsFresh, let sample else {
             peripheral.clearPending()
             return
@@ -150,6 +223,7 @@ final class AppModel: ObservableObject {
             calibrationState = calibrator.state
             peripheral.clearPending()
             if case .invalid(let reason) = calibrationState { statusMessage = reason }
+            diagnostics.record(RuntimeRecord(event: .calibration, state: .invalid))
             updateIdleTimer()
             return
         }

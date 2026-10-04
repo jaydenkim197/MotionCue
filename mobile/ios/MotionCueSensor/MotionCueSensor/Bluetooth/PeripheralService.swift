@@ -11,6 +11,11 @@ struct PeripheralStatus: Equatable {
     var lastNotificationDate: Date?
     var notificationCount = 0
     var droppedFrameCount = 0
+    var backpressureCount = 0
+    var queueP50Ms = 0.0
+    var queueP95Ms = 0.0
+    var queueMaxMs = 0.0
+    var queueSampleAgeMs = 0.0
     var lastError: String?
 }
 
@@ -23,6 +28,9 @@ final class PeripheralService: NSObject, @unchecked Sendable {
     private var serviceAdding = false
     private var subscribers: Set<UUID> = []
     private var status = PeripheralStatus()
+    private var queueTiming = RuntimeTickWindow()
+    private var lastTimingUpdate = 0.0
+    private var lastStatusPublish = 0.0
 
     var onStatusChanged: ((PeripheralStatus) -> Void)?
     // Accepted by CoreBluetooth, not an acknowledgment of reception by Windows.
@@ -101,16 +109,30 @@ final class PeripheralService: NSObject, @unchecked Sendable {
             return
         }
         if manager.updateValue(frame.data, for: frameCharacteristic, onSubscribedCentrals: nil) {
+            let now = ProcessInfo.processInfo.systemUptime
+            _ = queueTiming.tick(now)
+            if now - lastTimingUpdate >= 1 {
+                let timing = queueTiming.metrics
+                status.queueP50Ms = timing[.tickP50Ms] ?? 0
+                status.queueP95Ms = timing[.tickP95Ms] ?? 0
+                status.queueMaxMs = timing[.tickMaxMs] ?? 0
+                lastTimingUpdate = now
+            }
+            status.queueSampleAgeMs = max(0, (now - frame.sampleTimestamp) * 1_000)
             pendingFrame = nil
             status.lastNotificationDate = Date()
             status.notificationCount += 1
             publishStatus()
             DispatchQueue.main.async { [weak self] in self?.onFrameQueued?(frame.session) }
+        } else {
+            status.backpressureCount += 1
+            if ProcessInfo.processInfo.systemUptime - lastStatusPublish >= 1 { publishStatus() }
         }
         // False: retain one replaceable frame, retry only while the sample is fresh.
     }
 
     private func publishStatus() {
+        lastStatusPublish = ProcessInfo.processInfo.systemUptime
         let snapshot = status
         DispatchQueue.main.async { [weak self] in self?.onStatusChanged?(snapshot) }
     }

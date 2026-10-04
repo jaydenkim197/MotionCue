@@ -2,7 +2,7 @@
 
 기준일: 2026-10-04 · 대상: iOS/Windows 0.2.0 pilot · 물리 bench 미완료
 
-배포 갱신(18:23 KST): iPhone 0.2.0/build 2 Release 서명·설치 및 개발자 신뢰 후 정상 실행 완료(debugger 없음). 실기기 UI의 Ready to connect / Calibration Ready와 새 아이콘을 확인했다. 보정·Windows 수신·G1 bench는 아직 미검증이다. 현재 provisioning 만료는 2026-10-11 17:40 KST이며 이후에는 재서명/재설치한다. 상세 증거는 개발 로그에 기록했다.
+배포 기준: iPhone 0.2.0/build 2 정상 실행 및 Windows 0.2.0 실제 Subscribed/Streaming 수신을 확인했다(개발 로그). Windows foreground snapshot p50 약 58 ms는 임시 gate의 35–50 ms 범위를 벗어나며, background 중단도 보고돼 G1은 미통과다. build 3에서 iPhone 실행 진단/common-mode Timer 보완을 진행한다. build 2의 provisioning 만료는 2026-10-11 17:40 KST이며 이후에는 재서명/재설치한다.
 
 ## 목표 완성도
 
@@ -37,7 +37,7 @@
 5. accepted/missing/rejected·p50/p95/max/jitter SD 시작/끝 기록. p50/p95/SD는 최근 1500 간격, max/counters는 연결 이후 누적. Gap은 송신측 drop도 포함하며 radio-only loss가 아님.
 6. 정차 상태 background/Bluetooth off/강제 종료: 마지막 Windows 수신 이후 250 ms neutral/1초 source timeout 확인. BLE 구독과 stream timeout은 다른 상태.
 7. 재연결 10회: 수동 Scan/Connect 후 10초 이내 새 프레임, 오래된 비중립 cue 재생 없음. Process 종료 후 재보정.
-8. 잠금 **60초/5분** 각 1회: 연결·보정 후 debugger 없이 USB를 뽑고 잠금. Subscribed 유지/송신 정지/해제 후 재연결 없는 복구를 따로 기록.
+8. 잠금 **60초/5분** 각 1회: 연결·보정 후 debugger 없이 USB를 뽑고 잠금. Subscribed 유지/송신 정지/해제 후 재연결 없는 복구를 따로 기록. build 3에서는 해제 후 앱 foreground 복귀 → Details의 Prepare logs로 summary를 남기고 Mac 재연결 후 로컬 진단을 회수한다. 로그의 runtimeGap과 Windows max gap을 비교하되, 서로 다른 시계 차이를 one-way latency로 사용하지 않는다.
 9. 멈춰도 stale 프레임을 새 프레임처럼 보내지 않음. 연속 송신이 필요하면 **Keep screen on** 사용. 잠금 연속 송신은 보장하지 않음.
 10. Windows replay의 3조건/FMS/`Ctrl+Shift+F12`/정상·긴급 CSV 종료 record 재확인. Replay는 실제 축·지연 시험의 대체가 아님.
 

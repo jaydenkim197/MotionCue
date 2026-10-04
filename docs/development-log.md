@@ -23,6 +23,26 @@
 
 ---
 
+## 2026-10-04 18:57 KST — Windows 변경 반영 및 iPhone runtime 진단/common-mode 송신 보완
+
+상태: 코드/문서 `IMPLEMENTED`; iOS 자동 테스트 `VERIFIED`; 최신 실기기 서명·설치 및 잠금 재현 대기
+
+- 사용자가 전달한 Windows 결과를 확인하고 clean Mac main을 `e76845b`까지 fast-forward했다. Windows header 제거와 최신 실제 수신 기록 3개 commit을 보존했다. Windows 관찰 p50 약 58 ms는 수신 간격이지 end-to-end 지연이 아니며, 임시 G1 gate 35–50 ms는 아직 충족하지 않는다. 0.20 s cue filter 및 SensorFrame v1은 변경하지 않는다.
+- iPhone 앱 container의 Library에 기존 영속 runtime 진단 디렉터리가 없음을 확인했다. 이전 background 중단의 정확한 시각/원인은 회수 가능한 앱 로그가 없어 확정하지 않았다. 다른 앱/기기 전체 로그를 수집하지 않는다.
+- iOS **0.2.0 / build 3**에 local runtime JSONL을 추가했다. launch/build, 실제 초기 scene phase와 전환, motion availability, calibration, BLE 상태/중앙 수, sample freshness 변화, ≥250 ms observed timer gap, 10초 요약을 기록한다. Windows live reception과 iPhone CoreBluetooth enqueue를 구분한다.
+- 요약은 Timer/실제 enqueue의 최근 250 간격 p50/p95/max, sample age, enqueue rate/count, pending drop, updateValue backpressure를 포함한다. 최대 128 KiB 파일 2개/대기 log record 64개; utility queue 비동기 I/O와 finite numeric allowlist를 사용한다. 원시 IMU/위치/기기·central·참가자 ID/session UUID/오류 문자열을 저장·전송하지 않고 device backup에서 제외한다. Disk/queue/OS suspension 시 로그가 불완전할 수 있으며, 멈춘 동안에는 기록 불가하고 복귀 뒤 gap을 관찰한다.
+- Details에 짧은 enqueue 간격/backpressure 진단과 Local logs → Prepare logs → Share logs를 추가했다. Main은 그대로 유지한다. Export는 이전/현재 파일의 snapshot이며 자동 upload는 없다.
+- 25 Hz Timer를 main RunLoop common mode에 등록해 Details scrolling/tracking 중 default-mode Timer가 멈출 수 있는 경로를 보완했다. tick마다 추가 MainActor Task를 enqueue하지 않는다. 이는 프로세스 suspension/잠금 연속 송신 보장이 아니다. 송신 통계 정렬은 1초마다 갱신해 per-frame 비용을 줄인다.
+- Apple의 현재 CoreBluetooth 설명과 engineer 답변을 재확인했다. iOS 26+ Live Activity Bluetooth privileges를 locked/screen-off Core Motion 지속 실행 보장으로 해석하지 않는다. Live Activity/무음 audio/location 권한/반복 background-task 우회는 추가하지 않았다. [CoreBluetooth](https://developer.apple.com/documentation/corebluetooth), [Apple engineer screen-off 설명](https://developer.apple.com/forums/thread/815189).
+- iOS Simulator 자동 검증: 기존 15 + runtime 진단 8 = **23/23 통과**. tracking-mode Timer 실행, monotonic/중복/역행 clock, bounded interval/file rotation, finite privacy schema, async export flush 포함. 최신 후속 수정도 재빌드/회귀 확인한 뒤 배포 결과를 아래에 보완한다.
+- Mac에서 최신 Windows-compatible Core source로 Release tests **30/30 통과**를 재확인했다. `tools/collect-ios-runtime-logs.sh`를 추가해 지정한 paired device의 MotionCue 진단 파일 2개만 읽어 unique ignored artifacts folder로 회수한다. iPhone 파일을 수정하거나 debugger를 연결하지 않는다. Helper 실기기 검증은 build 3 설치 뒤 수행한다.
+- 실기기 Release compile을 마쳤으나 codesign/SecurityAgent가 키체인 허용 응답을 기다린다. 사용자에게 직접 허용을 요청했으며 보안을 우회하지 않는다. 현재 iPhone의 build 2를 build 3 설치 성공으로 표시하지 않는다.
+- 19:02 KST 후속 상태: backpressure 중에도 1초 간격으로 상태를 publish하도록 보완하고, 초기 scene phase 및 진단 UI까지 포함한 최종 source로 Simulator tests를 다시 실행해 **23/23 통과**를 확인했다. Collection helper의 `bash -n`/인자 누락 usage guard를 확인했다. 기기 inventory는 여전히 **0.2.0/build 2**이고 codesign 허용 대기다. 허용 뒤 최신 source를 다시 Release build해 설치해야 하며, 대기 중인 이전 build 산출물을 최종 source로 간주하지 않는다.
+
+잔여 물리 작업: 서명 허용 → 최신 source 재빌드/설치·앱 로그 회수 → 정지 거치/재보정·Windows 재연결 → foreground/Details scrolling 및 60초·5분 잠금 복귀 비교. 잠금 연속 송신·58 ms 개선·G1 통과는 아직 미검증이다.
+
+---
+
 ## 2026-10-04 — 0.2.0 실제 수신 확인 및 Windows Settings header 제거
 
 상태: 실제 수신/UI 변경/Release build `VERIFIED`; 장시간/잠금 bench 미완료

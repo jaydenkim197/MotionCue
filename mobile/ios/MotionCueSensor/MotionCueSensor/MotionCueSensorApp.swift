@@ -9,7 +9,7 @@ struct MotionCueSensorApp: App {
         WindowGroup {
             ContentView(model: model)
                 .task { model.start() }
-                .onChange(of: scenePhase) { _, newPhase in
+                .onChange(of: scenePhase, initial: true) { _, newPhase in
                     model.handleScenePhase(newPhase)
                 }
         }

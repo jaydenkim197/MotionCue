@@ -19,7 +19,7 @@ Android support remains a separate Study A compatibility task. macOS is a develo
 
 - No GPS/GNSS, Wi-Fi transport, cloud relay, analytics, account, or telemetry
 - No medical, anti-nausea, treatment, or effectiveness claim in the app UI
-- No background logging or participant-study workflow
+- No raw/background sensor recording or participant-study workflow. Bounded local runtime diagnostics are allowed for engineering fault analysis; they are not participant data or remote telemetry.
 - No app-layer pairing code, encryption protocol, fragmentation, or multi-receiver support
 - No attempt to silently infer a vehicle axis when the phone is loose or mounted in an unsupported orientation
 
@@ -101,6 +101,20 @@ Main displays truthful short connection/stream/calibration state and Calibrate. 
 The app needs an `NSBluetoothAlwaysUsageDescription` string that accurately explains that Bluetooth sends local sensor data to the nearby Windows MotionCue app. The v1 app declares the `bluetooth-peripheral` background mode so an already subscribed Windows central can remain connected while the phone is locked. This does not guarantee the 25 Hz application timer or Core Motion delivery while locked; iOS decides when background execution is available.
 
 Acceptance test: connect Windows first, confirm one subscribed central, lock the iPhone for at least 30 seconds, then unlock it. Record whether Windows remained subscribed and whether frames resume without reconnecting. Treat a disconnect as a test result to investigate, not as proof that the background entitlement was ignored.
+
+### Runtime diagnostics (0.2.0 build 3)
+
+- Transmit Timer uses the main run loop's common modes so Details scrolling does not suppress its nominal 40 ms ticks. This does not keep a suspended process running.
+- Record launch/build, scene transitions, motion availability, calibration state, BLE availability/subscriber count, sample freshness changes and observed tick gaps ≥250 ms. Every 10 seconds while executing, record a summary of tick intervals, sample age, CoreBluetooth enqueue intervals/counts, rejected enqueue attempts/backpressure and pending-frame drops.
+- Both interval windows are bounded to the latest 250 intervals. They may span lifecycle/session changes; consult event boundaries before interpreting a summary. Tick gaps are observed execution gaps, not proof of OS suspension or crashes. Enqueue intervals are not Windows reception or one-way latency. Rate refers to notifications accepted by CoreBluetooth.
+- Local JSONL has an allowlisted schema: event/state enums plus finite numeric metrics, wall time and monotonic uptime. No raw acceleration/quaternion, route/location, account, central/device ID, session UUID, error message or participant ID. No automatic upload; directory is excluded from device backups.
+- Two rolling files of at most 128 KiB each; asynchronous utility-queue writes and at most 64 pending log records. Under storage/queue failure diagnostics may be incomplete; sensor transmission must not wait for diagnostic disk I/O. The suspension/crash interval itself cannot write log entries; an observed gap is recorded after execution resumes.
+- Details → Local logs → Prepare logs → Share logs exports a snapshot of both files. Preparing/exporting while foreground records a summary and waits for previously queued log writes. Export remains user-controlled.
+- A connected Mac can copy only `Library/Application Support/Diagnostics/runtime.jsonl` and `runtime-previous.jsonl` using CoreDevice's `appDataContainer` for `com.motioncue.sensor`; no debugger or whole-phone sysdiagnose is required. Raw artifacts stay outside Git.
+
+Mac collection: `bash tools/collect-ios-runtime-logs.sh <paired-device-id>` (find the ID with `xcrun devicectl list devices`). It copies only the two named app diagnostic files into a unique ignored artifacts folder, without modifying the phone. A missing previous file is normal before the first rotation. Current-log failure stops collection; this helper requires build 3 logs to exist and device file access to be available.
+
+iOS 26+ CoreBluetooth documents Live Activity-related foreground privileges, but this is not a documented guarantee of continuous Core Motion/application execution on a locked, screen-off phone. Apple staff also describe screen-off limitations for background scanning. No Live Activity, silent audio, location permission or repeated background-task workaround is added to claim a solved lock-stream issue. [CoreBluetooth overview](https://developer.apple.com/documentation/corebluetooth), [Apple engineering clarification](https://developer.apple.com/forums/thread/815189).
 
 ## 8. Suggested project structure
 

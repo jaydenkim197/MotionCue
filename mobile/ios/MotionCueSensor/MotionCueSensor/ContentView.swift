@@ -164,8 +164,12 @@ struct ContentView: View {
                             diagnosticRow("Rate", String(format: "%.1f Hz", model.transmitRate))
                             diagnosticRow("Frames", "\(model.sentFrameCount)")
                             diagnosticRow("Dropped", "\(model.peripheralStatus.droppedFrameCount)")
+                            diagnosticRow("Backpressure", "\(model.peripheralStatus.backpressureCount)")
+                            diagnosticRow("Queue p50 / p95", String(format: "%.1f / %.1f ms",
+                                model.peripheralStatus.queueP50Ms, model.peripheralStatus.queueP95Ms))
+                            diagnosticRow("Sample at queue", String(format: "%.1f ms", model.peripheralStatus.queueSampleAgeMs))
                             diagnosticRow("Sample", model.sampleIsFresh ? "Fresh" : "Paused / unavailable")
-                            diagnosticRow("Version", Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
+                            diagnosticRow("Version", "\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "—"))")
                             diagnosticRow("Last send", lastNotificationText)
                             diagnosticRow(
                                 "Acceleration",
@@ -187,6 +191,25 @@ struct ContentView: View {
                             if let url = URL(string: UIApplication.openSettingsURLString) {
                                 UIApplication.shared.open(url)
                             }
+                        }
+                    }
+
+                    DetailCard(title: "Local logs") {
+                        Text("App state, timing and Bluetooth counts only. No raw motion, location or identifiers. Up to 256 KB; no upload.")
+                            .font(.caption)
+                            .foregroundStyle(Color("TextMuted"))
+                        Button("Prepare logs") {
+                            Task { await model.prepareDiagnosticExport() }
+                        }
+                        .lineLimit(1)
+                        if let url = model.diagnosticExportURL {
+                            ShareLink("Share logs", item: url)
+                                .lineLimit(1)
+                        }
+                        if model.diagnosticExportFailed {
+                            Text("Logs unavailable")
+                                .font(.caption)
+                                .foregroundStyle(Color("Danger"))
                         }
                     }
                 }
