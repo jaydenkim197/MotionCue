@@ -52,6 +52,8 @@
 - iOS 27 Simulator 앱 실행과 실제 screenshot에서 waveform header/compact 단일 card/한 줄 label을 시각 확인했다. Simulator의 Bluetooth unavailable 상태이며 실BLE 통과 증거가 아니다. Screenshot: ignored `artifacts/ios-main-0.2.0.png`.
 - 대기 중 코드 보완으로 초기 서명 job만 중단한 뒤 최신 소스로 다시 Release build를 시작했다. 최신 job도 codesign 키체인 접근 단계 대기이며 사용자 허용 전 기존 iPhone 설치 앱을 덮어쓰지 않았다.
 - 기존 인증서/provisioning/USB backup/사용자 파일은 삭제하지 않았다. 인증·암호 정보를 저장하지 않았다.
+- 최종 PNG 검수에서 iOS AppIcon/BrandMark의 alpha channel도 제거하도록 renderer를 보완했다(Windows ICO/preview의 투명 모서리는 유지). Windows published PE resource tree에서 icon/group-icon 포함을 확인했다.
+- 최종 iOS Release Simulator unsigned build 성공 및 AppIcon 1024×1024/RGB/no-alpha 검증 통과. 실기기 codesign sample은 SecurityServer signature 요청의 응답 대기를 확인했다. 인증서 재생성/키체인 보안 완화/암호 자동 입력을 시도하지 않았다.
 
 물리 잔여 작업: 키체인 허용 및 최신 iPhone 설치/실행 확인, Windows pull·재빌드·revision 확인, G1 bench, 실제 거치·축·지연 및 연구 절차 확정. 2026-08-24 연동 성공은 0.2.0 조합 검증 결과가 아니다.
 

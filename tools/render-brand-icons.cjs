@@ -6,15 +6,17 @@ const sharp = require('sharp');
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'design/brand/motioncue-icon.svg'), 'utf8');
 const catalog = path.join(root, 'mobile/ios/MotionCueSensor/MotionCueSensor/Resources/Assets.xcassets');
-async function writePNG(svg, size, file) {
+async function writePNG(svg, size, file, opaque = true) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
-  await sharp(Buffer.from(svg)).resize(size, size).png().toFile(file);
+  let pipeline = sharp(Buffer.from(svg)).resize(size, size);
+  if (opaque) { pipeline = pipeline.removeAlpha(); }
+  await pipeline.png().toFile(file);
 }
 async function main() {
   await writePNG(source, 1024, path.join(catalog, 'AppIcon.appiconset/AppIcon.png'));
   await writePNG(source, 192, path.join(catalog, 'BrandMark.imageset/BrandMark.png'));
   const rounded = source.replace('rx="0"', 'rx="216"');
-  await writePNG(rounded, 512, path.join(root, 'design/brand/motioncue-icon-preview.png'));
+  await writePNG(rounded, 512, path.join(root, 'design/brand/motioncue-icon-preview.png'), false);
   const sizes = [16, 20, 24, 32, 40, 48, 64, 128, 256];
   const images = await Promise.all(sizes.map(size => sharp(Buffer.from(rounded)).resize(size, size).png().toBuffer()));
   const header = Buffer.alloc(6 + images.length * 16);
