@@ -34,6 +34,7 @@
 - 사용자 screenshot 요청에 따라 Windows Settings의 `M` tile, 큰 MotionCue 제목, tagline 및 중복 header-status pill을 제거했다. 첫 연결/current-status 카드가 26 px top padding 뒤 바로 시작한다. native window title·EXE/tray icon은 유지한다.
 - 공통 design system에 Windows header 없는 layout 규칙을 반영했다. iOS UI와 BLE/IMU/filter parameter는 이번 변경 범위에서 수정하지 않았다.
 - Windows Release helper를 다시 실행해 tests **30/30 통과**와 publish 성공을 확인했다. 갱신 EXE를 재실행해 screenshot과 accessibility tree에서 상단 브랜드/중복 status가 사라지고 첫 카드가 위로 이동한 것을 검수했다. 재시작으로 기존 BLE 구독과 메모리 통계는 초기화된다.
+- 재실행 뒤 Scan/Connect로 `Subscribed`와 watchdog `Streaming`을 다시 확인했다. accepted **529**, missing/rejected **0/0**, p50/p95 **58.0/60.9 ms**, max **179.6 ms**를 관찰했다. 빠르게 변하는 state에서 `Phone IMU acceleration is unreliable`도 관찰되어 실제 움직임의 신뢰성·거치 검증은 아직 남아 있다.
 
 ---
 
