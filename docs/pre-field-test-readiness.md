@@ -4,7 +4,7 @@
 
 배포 갱신(20:17 KST): source `212ae50`의 iPhone 0.2.0/build 3 Release 서명·설치·정상 실행 및 runtime log 회수를 확인했다. Windows 구독 1개/sensor Fresh, 미보정 queued 0, 약 50초 foreground Timer p50 약 40.00 ms를 관찰했다. Windows 0.2.0의 이전 actual Streaming 수신 p50 약 58 ms는 임시 gate 35–50 ms 범위를 벗어나며, 새 보정 후 enqueue/수신 비교와 background 중단 재현이 남아 G1은 미통과다. 현 provisioning 만료는 2026-10-11 17:40 KST다.
 
-実측 갱신(20:33 KST): build 3 보정 후 약 70초의 summary 8개에서 enqueue 24.99–25.13 Hz, p50 39.59–40.02 ms, p95 40.77–49.21 ms, queued 60→1813, backpressure/drop 0을 확인했다. Fresh/화면 유지/구독 1개가 관찰됐다. **현재 Windows 수신 통계와 비교 대기**이며, 이 짧은 sender 표본은 G1 30분/잠금/10회 재연결 통과가 아니다.
+실측 갱신(20:33 KST): build 3 보정 후 약 70초의 summary 8개에서 enqueue 24.99–25.13 Hz, p50 39.59–40.02 ms, p95 40.77–49.21 ms, queued 60→1813, backpressure/drop 0을 확인했다. Fresh/화면 유지/구독 1개가 관찰됐다. **현재 Windows 수신 통계와 비교 대기**이며, 이 짧은 sender 표본은 G1 30분/잠금/10회 재연결 통과가 아니다.
 
 ## 목표 완성도
 
