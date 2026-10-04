@@ -15,6 +15,7 @@ enum RuntimeMetric: String {
     case ticks, tickP50Ms, tickP95Ms, tickMaxMs, gapMs, screenAwake, errorPresent
     case queueP50Ms, queueP95Ms, queueMaxMs, queueSampleAgeMs, backpressure
     case sessionFrames, sessionGoal, sessionElapsedSeconds, schedulerError
+    case calibrationFailure
 }
 
 extension SensorSessionState {

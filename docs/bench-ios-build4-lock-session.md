@@ -1,8 +1,19 @@
-# iPhone build 4 — 유한 잠금 송신 후보 시험
+# iPhone build 4/5 — 유한 잠금 송신 후보 시험
 
-상태: 구현·자동 검증 후보. **잠금 중 연속 송신 성공은 아직 미검증**.
+상태: build 4 background 송신 지속은 확인했으나25 Hz/공백 기준은 실패. **build 5 잠금 중 안정적인25 Hz 송신은 아직 미검증**.
+
+수정: build 4는 잠금/background 송신이 계속됐지만 목표25 Hz에 미달했다. build 5가 후속 후보이며 설치·잠금 재시험 상태는 개발 로그를 확인한다.
 
 2026-10-04 배포 확인: iPhone 0.2.0 (4) Release build/strict signing/설치·정상 launch, Simulator 35/35 및 Core Release 30/30 통과. Start 후 Frames 증가 사용자 확인. 실제 iOS background/Windows 수신 시험은 아래 절차로 별도 검증한다.
+
+## build 4 실측과 build 5 후보
+
+- 22:00:16 Start/Running →22:01:18 background. 첫 세션은22:03:11 calibration invalid/세션중단. 고정 실패 종류를 저장하지 않던 build4 로그로는 원인을 확정할 수 없다. 거치 움직임 등 안전 guard를 제거하지 않는다.
+- 두 번째22:03:48 Start/Running →22:03:54 background. 22:04:02–22:11:15의 **432.768 s, +3659 enqueue =8.4549 Hz**. 구독1/fresh1/drop·backpressure0은 summary에서 확인됐으나 목표25 Hz는 실패. 사용자는 잠금 중 움직임에 Windows cue 반응을 보고했다. 실제 Windows counters/수신률은 추가 대조가 필요하다.
+- 이후 observed Timer gap1.56/1.31/2.32 s 및 foreground/background 재전환이 있어 전체를 정확한5분 하나로 합산하지 않는다. 실행 유지와 안정적인25 Hz는 별도 조건이다.
+- build 5는 Main RunLoop Timer로 전송하지 않는다. Core Motion callback/acquisition timestamp에서25 Hz 기회를 생성하고 지연슬롯을 건너뛴다. 100 ms freshness/중복 차단/latest-only pending/거치 안전검사는 그대로다. Timer는1 Hz health/logging만 수행. Diagnostic acceleration display만 foreground10 Hz이며 송신은 별도다.
+- build 5 local tick metrics는 **sample-driven 송신 기회**의 간격이며 build3/4 Timer metrics와 의미가 다르다. Calibration invalid category 숫자와 종료 elapsed freeze도 추가. 원시센서/오류문자열 저장 없음.
+- Simulator **42/42** 통과; 실기기 서명/설치·새 잠금rate는 별도 확인한다. 자동 테스트나 build4 잠금 지속을 build5 실측 통과로 사용하지 않는다.
 
 ## 달라진 점
 
@@ -17,7 +28,7 @@ build 3는 BLE 구독을 유지하지만 잠금 중 센서 송신이 멈췄고 f
 
 ## 먼저 60초 시험
 
-1. iPhone 앱 0.2.0 (4) 확인. 재설치/프로세스 재시작 후에는 정지 거치(화면 위/상단 전방)하고 **Calibrate**를 다시 한다.
+1. 설치된 최신 후보 확인(후속 **0.2.0 (5)**). 재설치/프로세스 재시작 후에는 정지 거치(화면 위/상단 전방)하고 **Calibrate**를 다시 한다.
 2. Windows 기존 구독/수신이 복구됐는지 확인; 복구되지 않을 때만 Scan/Connect. `Subscribed / Streaming`, accepted·missing·rejected·시각·최근 수신 통계를 기록한다.
 3. iPhone Details의 Windows 1/Fresh/약25 Hz 확인 → Locked session Start → **Running + session Frames 증가** 확인. 요청 거절 시 잠금 시험을 진행하지 않는다.
 4. debugger/console 없이 **USB를 뽑고 측면 버튼으로 잠금**. 정확한 잠금 시각 기록. 전원 종료/앱 강제 종료는 하지 않는다.

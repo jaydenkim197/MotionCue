@@ -14,6 +14,7 @@ final class DeviceMotionProvider: @unchecked Sendable {
     init() {
         queue.name = "com.motioncue.sensor.motion"
         queue.maxConcurrentOperationCount = 1
+        queue.qualityOfService = .userInitiated
     }
 
     var isAvailable: Bool { manager.isDeviceMotionAvailable }

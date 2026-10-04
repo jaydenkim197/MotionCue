@@ -14,6 +14,8 @@ Windows 실측 갱신(21:15–21:17 KST): foreground 약 47.3초에서 accepted 
 
 잠금 대응 후보(build 4): `Details → Locked session → Start`로 iOS 26+ 공식 continued-processing 작업을 명시적으로 시작하는 유한 송신 세션을 추가했다. 45,000 fresh enqueue 목표(약 30분)/35분 hard limit이며 OS 승인·취소/실제 잠금 연속 송신은 실기기 확인이 필요하다. 무기한 송신이나 G1 통과를 의미하지 않는다. [검증 절차](bench-ios-build4-lock-session.md).
 
+후속(build 5): build4의 background 실행/송신 지속은 확인했지만 약8.45 Hz와 일부 >1초 공백으로G1은 실패. 송신을 real Core Motion sample-driven cadence로 변경했다. Simulator42/42 통과; 실기기 서명·설치와 새 잠금실측은 개발 로그를 확인한다. 단순 움직임 반응만으로25 Hz/G1 통과를 주장하지 않는다.
+
 **통제된 연구자 공학 파일럿에 사용할 안정적인 버전**을 만든다. App Store 수준, 모든 휴대폰 지원, 잠금 연속 송신 보장, 멀미 개선 효과 입증은 이번 구현 완료 기준이 아니다.
 
 - 유지: IMU 50 Hz → SensorFrame v1 42 bytes/BLE 25 Hz → Windows cue.

@@ -156,6 +156,20 @@ final class LockedSensorSessionTests: XCTestCase {
         XCTAssertTrue(scheduler.jobs.isEmpty)
     }
 
+    func testEndedElapsedTimeIsFrozenUntilAnExplicitRestart() {
+        let scheduler = TestSessionScheduler()
+        var time = ContinuousClock.now
+        let session = LockedSensorSession(scheduler: scheduler, now: { time })
+        session.start(eligible: true)
+        _ = scheduler.launch(0)
+        time = time.advanced(by: .seconds(2))
+        session.stop()
+        time = time.advanced(by: .seconds(100))
+        XCTAssertEqual(session.snapshot.elapsedSeconds, 2)
+        session.start(eligible: true)
+        XCTAssertEqual(session.snapshot.elapsedSeconds, 0)
+    }
+
     func testProgressReportingIsThrottledAndFreshProgressKeepsJobAlive() {
         let scheduler = TestSessionScheduler()
         var time = ContinuousClock.now

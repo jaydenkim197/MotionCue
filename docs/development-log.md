@@ -23,6 +23,21 @@
 
 ---
 
+## 2026-10-04 22:21 KST — build 4 잠금 중 실행 지속/감속 확인 및 build 5 sample-driven 송신 후보
+
+상태: build 4 실제 background 실행 지속·rate 감속 `VERIFIED`; build 5 변경 `IMPLEMENTED`, 자동 검증/배포/잠금 재시험 진행 중. **해결 완료/G1 통과 아님**.
+
+- 사용자 Start 후 Frames 증가 및 잠긴 iPhone 움직임에 따른 Windows cue 반응을 보고했다. USB 분리/60초→5분 확인을 요청했고 이후 `done` 응답을 받았다. 검사 도중 앱 재설치/재시작/debugger/console attach는 하지 않았다. 기존 CoreDevice localNetwork 연결로 **명명된 MotionCue runtime 파일 2개만** 읽어 회수했으며 이는 앱의 BLE 전송 경로를 Wi-Fi로 바꾼 것이 아니다.
+- build 4 source `82e29bf`, 22:00:16 sessionRequested→sessionRunning, 22:01:18 background. 22:03:11 sessionInterrupted(2463 frames)와 calibration invalid가 동시에 기록됐다. 현 build 4 schema에는 invalid 원인 종류가 없어 **타이밍 때문이라고 확정할 수 없다**. 앞선 대화의 원인 단정은 철회한다. 가능한 고정 실패 사유는 sensor normalization/거치 움직임이며 안전 guard를 없애지 않는다.
+- 22:03:48 두 번째 Start/Running, 22:03:54 background. `artifacts/ios-runtime-20261004-221114-GAAVdm`의 22:04:02–22:11:15 summary 44개, **432.768 s**에 queued **6179→9838 (+3659) = 8.4549 Hz**. Summary마다 centrals 1/fresh 1/drop·backpressure 0. 22:11:15 최근 window enqueue p50/p95 **135.49/180.90 ms**, send-timer p50/p95 **135.78/180.93 ms**였다. Sample-at-queue는 이 window에서 최대 약25.63 ms. 실행·fresh motion/BLE enqueue는 계속됐으나 nominal25 Hz/G1은 실패다. Windows 수신 counter/rate와 별개다.
+- 추가 회수 `artifacts/ios-runtime-20261004-222110-tP48Y0`에서 22:12:46 약1.56 s, 22:12:52 약1.31 s, 22:16:34 약2.32 s의 observed Timer gap 및 후반 freshness 변동을 확인했다. 중간 foreground 복귀/추가 background 구간도 있어 전체를 한 번의 정확한5분 trial로 합산하지 않는다. iOS runtime grant만으로 지연·연속성을 보장한다고 주장하지 않는다.
+- 후보 build 5: Main RunLoop Timer는 1 Hz health/summary/no-progress watchdog만 맡기고, **실제 50 Hz Core Motion callback의 acquisition timestamp**로25 Hz 송신 기회를 정한다. 2 ms sample jitter tolerance, 최소38 ms 송신 spacing, stale/duplicate/future/unreliable rejection, 지연 슬롯 skip/no catch-up burst 및 session reset을 적용했다. 기존100 ms freshness gate와 latest-only BLE pending validation은 유지한다. Core Motion OperationQueue는 userInitiated이며 diagnostic acceleration UI만 foreground10 Hz로 줄인다. 백그라운드25 Hz 복구는 아직 실측 전 가설이다.
+- 거치/보정 guard는 유지하고 invalid의 고정 category 숫자(1 sensor/2 stationary/3 gravity/4 mount/5 calibration timing/6 possible mount movement)를 allowlist log에 추가했다. 오류 문자열/원시 센서값은 저장하지 않는다. 종료된 background session의 elapsed metric이 계속 증가하던 문제도 종료 시점에 freeze했다. Timer tick 필드는 build 5부터 sample-driven send-opportunity 간격이므로 이전build Timer 통계와 구분한다.
+- 코드 추가에 따른 Xcode source/test refs와 버전을0.2.0 (5)로 갱신한다. Protocol/UUID/Windows 코드/0.20 s smoothing은 그대로다. 검증: cadence50→25/jitter/no-burst/stale/clock reset5개, 종료 elapsed freeze1개, 거치 guard/category1개를 기존35개에 추가했다. 결과/설치와 후속 잠금 시험은 아래에 보완한다.
+- 22:28 KST 후속: 최신 source의 Simulator **42/42**, 실패/skip/runtime warning0을 xcresult에서 확인했다. `git diff --check`/plist lint 통과. Device Release compile을 마쳤지만 codesign/SecurityAgent가 사용자 키체인 허용을 기다리며 artifact는 아직 unsigned였다. 설치 앱을build5라고 표시하지 않고 사용자에게 직접 서명 허용과 iPhone 잠금 해제를 요청했다. 이전 잠금 trial원본은 새 설치 전에 모두 회수했다. Helper는 raw artifacts를 Git에 올리지 않으며 source/spec/bench/readiness/README/로그를 동기화한다.
+
+---
+
 ## 2026-10-04 21:48 KST — 잠금 중 센서 송신 중단 원인 확인 및 유한 background 세션 후보 구현
 
 상태: 원인 대조 `VERIFIED`; iOS background 세션 후보 `IMPLEMENTED`; 빌드/자동 테스트/실기기 잠금 검증 진행 중

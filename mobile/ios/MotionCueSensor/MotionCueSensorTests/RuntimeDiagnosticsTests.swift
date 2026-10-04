@@ -27,10 +27,10 @@ final class RuntimeDiagnosticsTests: XCTestCase {
         XCTAssertEqual(window.tick(10.04)!, 40, accuracy: 0.001)
     }
 
-    func testTransmitTimerFiresDuringTrackingMode() async {
+    func testRuntimeTimerFiresDuringTrackingMode() async {
         await MainActor.run {
             var fired = false
-            let timer = AppModel.installTransmitTimer { fired = true }
+            let timer = AppModel.installRuntimeTimer(interval: 0.02) { fired = true }
             defer { timer.invalidate() }
             let deadline = Date(timeIntervalSinceNow: 0.2)
             while !fired && Date() < deadline {

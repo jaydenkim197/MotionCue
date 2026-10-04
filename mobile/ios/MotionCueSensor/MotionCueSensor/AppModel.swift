@@ -30,6 +30,7 @@ final class AppModel: ObservableObject {
     private var backgroundTransmissionBlocked = false
     private var transmitTimer: Timer?
     private var freshness = SampleFreshnessGate()
+    private var sendCadence = SensorSendCadence()
     private var sessionStart: TimeInterval?
     private var session = UUID()
     private var sequence: UInt32 = 0
@@ -40,6 +41,7 @@ final class AppModel: ObservableObject {
     private var runtimeState: RuntimeState = .active
     private var tickWindow = RuntimeTickWindow()
     private var lastSummary = ProcessInfo.processInfo.systemUptime
+    private var lastMotionUIUpdate = 0.0
 
     init() {
         keepScreenAwake = UserDefaults.standard.object(forKey: "keepScreenAwake") as? Bool ?? true
@@ -99,11 +101,12 @@ final class AppModel: ObservableObject {
     func start() {
         guard transmitTimer == nil else { return }
         motionProvider.start()
-        transmitTimer = Self.installTransmitTimer { [weak self] in self?.transmitLatest() }
+        // This timer is only a health/logging watchdog. It no longer drives BLE transmission.
+        transmitTimer = Self.installRuntimeTimer { [weak self] in self?.refreshRuntime() }
     }
 
-    static func installTransmitTimer(action: @escaping @MainActor () -> Void) -> Timer {
-        let timer = Timer(timeInterval: 1.0 / 25.0, repeats: true) { _ in
+    static func installRuntimeTimer(interval: TimeInterval = 1, action: @escaping @MainActor () -> Void) -> Timer {
+        let timer = Timer(timeInterval: interval, repeats: true) { _ in
             // The timer is installed only on the main run loop. Avoid an extra queued Task per tick.
             MainActor.assumeIsolated { action() }
         }
@@ -205,10 +208,16 @@ final class AppModel: ObservableObject {
         sequence = 0
         clockResetPending = true
         freshness = SampleFreshnessGate()
+        sendCadence = SensorSendCadence()
     }
 
     private func consume(_ sample: SensorSample) {
-        latestAcceleration = sample.userAcceleration
+        let now = ProcessInfo.processInfo.systemUptime
+        // Raw diagnostic display needs no 50 Hz redraws, especially on a locked screen.
+        if isForeground && now - lastMotionUIUpdate >= 0.1 {
+            latestAcceleration = sample.userAcceleration
+            lastMotionUIUpdate = now
+        }
         if case .collecting = calibrator.state {
             calibrationState = calibrator.acceptForCalibration(sample)
             switch calibrationState {
@@ -218,18 +227,18 @@ final class AppModel: ObservableObject {
                 diagnostics.record(RuntimeRecord(event: .calibration, state: .calibrated))
             case .invalid(let reason):
                 statusMessage = reason
-                diagnostics.record(RuntimeRecord(event: .calibration, state: .invalid))
+                diagnostics.record(RuntimeRecord(event: .calibration, state: .invalid,
+                    metrics: [.calibrationFailure: Double(calibrationState.runtimeFailureCode)]))
             default: break
             }
             updateIdleTimer()
         }
+        guard sendCadence.accept(timestamp: sample.timestamp, now: now, reliable: sample.isReliable) else { return }
+        transmit(sample, now: now)
     }
 
-    private func transmitLatest() {
+    private func refreshRuntime() {
         let now = ProcessInfo.processInfo.systemUptime
-        if let gap = tickWindow.tick(now), gap >= 250 {
-            diagnostics.record(RuntimeRecord(event: .runtimeGap, state: runtimeState, metrics: [.gapMs: gap]))
-        }
         if now - lastSummary >= 10 { recordSummary() }
         let rateElapsed = now - rateWindowStart
         if rateElapsed >= 1 {
@@ -247,12 +256,21 @@ final class AppModel: ObservableObject {
         }
         sensorSession.pulse(streamEligible: calibrationState.isCalibrated && peripheralStatus.isPoweredOn
             && peripheralStatus.connectedCentrals > 0)
-        guard !backgroundTransmissionBlocked else { peripheral.clearPending(); return }
-        guard sampleIsFresh, let sample else {
+        if !sampleIsFresh || backgroundTransmissionBlocked { peripheral.clearPending() }
+    }
+
+    private func transmit(_ sample: SensorSample, now: TimeInterval) {
+        if let gap = tickWindow.tick(now), gap >= 250 {
+            diagnostics.record(RuntimeRecord(event: .runtimeGap, state: runtimeState, metrics: [.gapMs: gap]))
+        }
+        // Core Motion callback work can proceed even when the watchdog timer is throttled by iOS.
+        refreshRuntime()
+        guard !backgroundTransmissionBlocked,
+              SampleFreshnessGate.isFresh(timestamp: sample.timestamp, now: now) else {
             peripheral.clearPending()
             return
         }
-        guard calibrationState.isCalibrated, peripheralStatus.isPoweredOn,
+        guard sampleIsFresh, calibrationState.isCalibrated, peripheralStatus.isPoweredOn,
               peripheralStatus.connectedCentrals > 0,
               freshness.accept(timestamp: sample.timestamp, now: now, reliable: sample.isReliable) else { return }
         if sessionStart == nil { sessionStart = sample.timestamp }
@@ -263,7 +281,8 @@ final class AppModel: ObservableObject {
             sensorSession.interrupt()
             peripheral.clearPending()
             if case .invalid(let reason) = calibrationState { statusMessage = reason }
-            diagnostics.record(RuntimeRecord(event: .calibration, state: .invalid))
+            diagnostics.record(RuntimeRecord(event: .calibration, state: .invalid,
+                metrics: [.calibrationFailure: Double(calibrationState.runtimeFailureCode)]))
             updateIdleTimer()
             return
         }

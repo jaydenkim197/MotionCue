@@ -28,6 +28,20 @@ enum CalibrationState: Equatable {
         case .invalid: "Recalibrate"
         }
     }
+
+    // Fixed app-defined categories only; runtime logs must not contain free-form error text.
+    var runtimeFailureCode: Int {
+        guard case .invalid(let reason) = self else { return 0 }
+        switch reason {
+        case "sensor reading is unavailable": return 1
+        case "keep the vehicle stationary, then recalibrate": return 2
+        case "gravity reading is unreliable": return 3
+        case "mount screen-up, top edge forward, then recalibrate": return 4
+        case "sensor timing interrupted — recalibrate": return 5
+        case "possible mount movement detected": return 6
+        default: return 0
+        }
+    }
 }
 
 final class VehicleAxisCalibrator {

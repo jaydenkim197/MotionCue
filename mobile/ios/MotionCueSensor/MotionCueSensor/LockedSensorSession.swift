@@ -64,6 +64,7 @@ final class LockedSensorSession {
     private var startedAt: ContinuousClock.Instant?
     private var lastFrameAt: ContinuousClock.Instant?
     private var lastReportAt: ContinuousClock.Instant?
+    private var endedAt: ContinuousClock.Instant?
 
     init(scheduler: SensorSessionScheduling? = nil, goal: Int = 45_000,
          timeLimit: Double = 35 * 60, now: @escaping () -> ContinuousClock.Instant = { .now }) {
@@ -75,7 +76,7 @@ final class LockedSensorSession {
 
     var snapshot: SensorSessionSnapshot {
         SensorSessionSnapshot(state: state, frames: frames, goal: goal,
-            elapsedSeconds: Int(max(0, elapsed(since: startedAt))), schedulerError: schedulerError)
+            elapsedSeconds: Int(max(0, elapsed(since: startedAt, until: endedAt))), schedulerError: schedulerError)
     }
 
     func start(eligible: Bool) {
@@ -91,6 +92,7 @@ final class LockedSensorSession {
         startedAt = nil
         lastFrameAt = nil
         lastReportAt = nil
+        endedAt = nil
         state = .requested
         publish()
         scheduler.submit(identifier: job, onLaunch: { [weak self] task in
@@ -141,6 +143,7 @@ final class LockedSensorSession {
     private func finish(_ result: SensorSessionState) {
         guard state.isBusy else { return }
         state = result
+        endedAt = now()
         if let identifier { scheduler.cancel(identifier: identifier) }
         identifier = nil
         task?.onExpiration = nil
@@ -158,10 +161,10 @@ final class LockedSensorSession {
         onUpdate?(snapshot)
     }
 
-    private func elapsed(since instant: ContinuousClock.Instant?) -> Double {
+    private func elapsed(since instant: ContinuousClock.Instant?, until end: ContinuousClock.Instant? = nil) -> Double {
         guard let instant else { return 0 }
         // ContinuousClock includes time spent asleep, unlike the IMU/systemUptime measurement clock.
-        let parts = instant.duration(to: now()).components
+        let parts = instant.duration(to: end ?? now()).components
         return Double(parts.seconds) + Double(parts.attoseconds) / 1e18
     }
 }

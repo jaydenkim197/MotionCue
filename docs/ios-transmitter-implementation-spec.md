@@ -129,6 +129,10 @@ iOS 26+ CoreBluetooth documents Live Activity-related foreground privileges, but
 
 Apple documents user-started jobs with real progress, sensor analysis/background CPU use and system-controlled termination, but does not specifically guarantee this device's locked CoreMotion→BLE pipeline. [Long-running tasks](https://developer.apple.com/documentation/backgroundtasks/performing-long-running-tasks-on-ios-and-ipados), [BGContinuedProcessingTask](https://developer.apple.com/documentation/backgroundtasks/bgcontinuedprocessingtask).
 
+### Sample-driven send opportunities (build 5 candidate)
+
+Build 4 kept sending in background but measured only8.45 Hz over a7.2-minute snapshot window. A subsequent >1-second gap means continued runtime is not sufficient for the intended rate/continuity. Build 5 derives send opportunities from real Core Motion acquisition timestamps rather than the throttled main run-loop Timer. It tolerates2 ms sample jitter, enforces38 ms minimum send spacing, skips late slots and rejects stale/duplicate/future/unreliable samples without catch-up bursts. The1 Hz common-mode timer is now only a health/logging watchdog. `tick*` metrics in build5 describe sample-driven send attempts; build3/4 described Timer intervals. Freshness/packet/axis safety rules are unchanged. Motion delivery uses a userInitiated OperationQueue; diagnostic acceleration UI is updated at10 Hz only in foreground. No background UI redraw is needed for that value. Forty-two simulator tests pass; physical25 Hz locked transmission remains to be measured. Fixed numeric calibration-failure categories aid diagnosis without logging error text.
+
 ## 8. Suggested project structure
 
 ```text

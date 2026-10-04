@@ -75,6 +75,16 @@ final class SensorSafetyTests: XCTestCase {
         assertInvalid(c.state)
     }
 
+    func testLooseMountGuardIsRetainedAndLoggedAsFixedCategory() {
+        let c = calibrated()
+        let halfAngle = 35.0 * Double.pi / 360
+        let moved = SensorSample(timestamp: 1.02, userAcceleration: SensorVector(x: 0, y: 0, z: 0),
+            rotationRate: SensorVector(x: 0, y: 0, z: 0), gravity: SensorVector(x: 0, y: 0, z: 9.81),
+            attitude: SensorQuaternion(w: cos(halfAngle), x: sin(halfAngle), y: 0, z: 0), isReliable: true)
+        XCTAssertNil(c.frame(from: moved, sequence: 1, elapsedMilliseconds: 20, sessionReset: false))
+        XCTAssertEqual(c.state.runtimeFailureCode, 6)
+    }
+
     private func calibrated() -> VehicleAxisCalibrator {
         let c = VehicleAxisCalibrator()
         c.begin()
