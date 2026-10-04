@@ -23,6 +23,21 @@
 
 ---
 
+## 2026-10-04 21:15–21:17 KST — Windows 실제 25 Hz 수신 및 iPhone build 3 잠금 중단 관찰
+
+상태: foreground throughput/잠금 중단 `VERIFIED`; 잠금 해제 복구 확인 진행 중, G1 미완료
+
+- GitHub `16487ba`까지 Mac 4개 commit을 pull해 iPhone build 3 local runtime logging/common-mode Timer 및 약 25 Hz enqueue 검증 기록을 반영했다. `e76845b..16487ba`에서 Windows `src/`, `tests/`, release helper 변경이 없음을 확인해 현재 EXE/구독을 유지했다.
+- 사용자 foreground/보정/USB 분리 준비 확인 후 기존 Windows BLE 구독에서 `Ready/Streaming`으로 자동 복귀했다. 수동 Disconnect/Connect는 사용하지 않았다.
+- 21:14:33.681–21:15:20.982 KST, **47.301초**에 accepted **52395→53577 (+1182)**로 실제 평균 수신률 **24.9889 Hz**를 확인했다. Missing/rejected **0/0**, sender sample interval **40 ms**, p50/p95 **58.2/61.1 ms**였다.
+- 따라서 약 58 ms median의 역수로 수신률 약 17 Hz 또는 BLE 지연을 결론낼 수 없다. 전체 처리량은 25 Hz에 해당한다. 불균등/묶음 전달은 후보 설명이며 개별 간격 분포/OS trace 없이 확정하지 않는다. Mac enqueue 표본은 다른 시각이라 동시 송수신 비교도 아직 아니다.
+- 사용자 잠금 확인 뒤 21:16:31.670–21:17:53.731 KST **82.061초** 동안 유지 후 해제를 안내했다. 목표 60초를 넘긴 시험이다. 전면 screenshot과 진단에서 BLE `Subscribed` 유지, accepted **54194**로 정지, source/watchdog `Disconnected`, timeout 및 cue invisible/zero offset을 관찰했다. 정확한 잠금 직후 250 ms/1 s transition 시간은 측정하지 않았다.
+- Windows 창이 가려질 때 accessibility 결과에 이전 상태가 남아 screenshot을 전면 확인한 뒤 text를 다시 읽었다. 잠금 시작 시의 오래된 `Ready` text를 잠금 연속 송신 증거로 사용하지 않는다.
+- 잠금 해제·MotionCue foreground 복귀 뒤 Scan/Connect/Calibrate 없이 자동 복구를 확인하도록 사용자에게 안내했고 결과는 확인 대기다. 장시간/5분 잠금/10회 재연결/G1 전체 통과로 표시하지 않는다.
+- 장비·EXE hash·시각별 통계·해석·남은 시험을 `docs/bench-2026-10-04-windows-build3.md`에 정리했다. Filter, wire format, 구현 코드 또는 기존 gate 수치를 변경하지 않았다.
+
+---
+
 ## 2026-10-04 20:33 KST — build 3 보정 후 25 Hz 실제 enqueue 확인
 
 상태: iPhone 보정/foreground enqueue 진단 `VERIFIED`; 동시 Windows 수신 비교·G1 장시간/잠금 bench 미완료

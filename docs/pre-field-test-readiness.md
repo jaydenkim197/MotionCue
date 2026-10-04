@@ -6,6 +6,8 @@
 
 실측 갱신(20:33 KST): build 3 보정 후 약 70초의 summary 8개에서 enqueue 24.99–25.13 Hz, p50 39.59–40.02 ms, p95 40.77–49.21 ms, queued 60→1813, backpressure/drop 0을 확인했다. Fresh/화면 유지/구독 1개가 관찰됐다. **현재 Windows 수신 통계와 비교 대기**이며, 이 짧은 sender 표본은 G1 30분/잠금/10회 재연결 통과가 아니다.
 
+Windows 실측 갱신(21:15–21:17 KST): foreground 약 47.3초에서 accepted +1182, **실제 수신 24.99 Hz**, missing/rejected 0, p50/p95 58.2/61.1 ms를 확인했다. 60초 목표를 넘어 82초 유지한 잠금 확인 구간에서는 BLE 구독은 유지됐지만 수신이 멈추고 timeout/큐 비표시가 관찰됐다. 잠금 해제 후 복구는 확인 중이다. Median 간격의 역수와 처리량은 다르며 one-way latency로 해석하지 않는다. [Windows bench 기록](bench-2026-10-04-windows-build3.md) 참조. G1 전체는 미통과다.
+
 ## 목표 완성도
 
 **통제된 연구자 공학 파일럿에 사용할 안정적인 버전**을 만든다. App Store 수준, 모든 휴대폰 지원, 잠금 연속 송신 보장, 멀미 개선 효과 입증은 이번 구현 완료 기준이 아니다.
