@@ -126,8 +126,8 @@ The Scan and Connect controls are necessary for setup and recovery, but should n
 
 ### 5.1 App header
 
-- 46 px rounded-square waveform + dot product mark. Source: `design/brand/motioncue-icon.svg`; renderer: `tools/render-brand-icons.cjs`.
-- Product name on the left. On iOS, omit the descriptive subtitle and status pill; the connection card owns status.
+- Windows Settings starts directly with the connection and current-status cards, with 26 px top padding. Do not add an in-content logo, product title, tagline, or duplicate header-status pill. The native window title identifies the app.
+- iOS retains a compact product name and waveform + dot mark. Source: `design/brand/motioncue-icon.svg`; renderer: `tools/render-brand-icons.cjs`. Omit the descriptive subtitle and status pill; the connection card owns status.
 - iOS has one 44 pt gear button leading to connection options, calibration help and diagnostics. No account controls.
 - iOS AppIcon is an opaque 1024 px square (OS mask); Windows EXE/tray uses a transparent rounded multi-size ICO. Do not use an SF Symbol export as the cross-platform brand icon.
 

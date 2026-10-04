@@ -112,24 +112,9 @@
   </Window.Resources>
 
   <Grid>
-    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-    <Grid Margin="34,26,34,18">
-      <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-      <Border Width="46" Height="46" CornerRadius="14" Background="{StaticResource Primary}">
-        <TextBlock Text="M" Foreground="White" FontWeight="Bold" FontSize="21" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-      </Border>
-      <StackPanel Grid.Column="1" Margin="14,1,0,0">
-        <TextBlock Text="MotionCue" FontSize="24" FontWeight="SemiBold"/>
-        <TextBlock Text="Visual motion cues for a more comfortable ride" Foreground="{StaticResource MutedText}" FontSize="12"/>
-      </StackPanel>
-      <Border Grid.Column="2" Background="White" CornerRadius="16" Padding="15,9" VerticalAlignment="Center">
-        <StackPanel Orientation="Horizontal"><Ellipse Width="8" Height="8" Fill="{StaticResource Primary}" Margin="0,0,8,0"/><TextBlock x:Name="HeaderStatusText" Text="Checking sensor…" FontSize="12" FontWeight="SemiBold"/></StackPanel>
-      </Border>
-    </Grid>
-
-    <ScrollViewer x:Name="SettingsScrollViewer" Grid.Row="1" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer x:Name="SettingsScrollViewer" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
       <Grid Width="{Binding ViewportWidth, ElementName=SettingsScrollViewer}">
-      <Grid Margin="34,0,34,28">
+      <Grid Margin="34,26,34,28">
         <Grid.ColumnDefinitions><ColumnDefinition Width="1.65*"/><ColumnDefinition Width="18"/><ColumnDefinition Width="1*" MinWidth="270"/></Grid.ColumnDefinitions>
         <StackPanel>
           <Border Style="{StaticResource Card}"><StackPanel>

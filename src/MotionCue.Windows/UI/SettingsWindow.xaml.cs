@@ -301,12 +301,6 @@ public partial class SettingsWindow : Window
     private void RefreshStatus()
     {
         var connected = _controller.SourceStatus.Availability == MotionSourceAvailability.Ready;
-        HeaderStatusText.Text = _controller.IsSimulation
-            ? "Test signal active"
-            : connected
-                ? "Phone connected"
-                : "Phone not connected";
-
         StatusText.Text = _controller.IsSimulation
             ? "Virtual phone SensorFrame replay active"
             : connected

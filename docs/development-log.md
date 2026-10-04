@@ -23,6 +23,20 @@
 
 ---
 
+## 2026-10-04 — 0.2.0 실제 수신 확인 및 Windows Settings header 제거
+
+상태: 실제 수신/UI 변경/Release build `VERIFIED`; 장시간/잠금 bench 미완료
+
+- 사용자가 작동과 약간의 지연, iPhone background 중단을 보고했다. Windows live Diagnostics에서 BLE `Subscribed`, watchdog `Streaming`, accepted/missing/rejected **2397/0/0**, sequence gap **0.00%**, sensor sample interval **40 ms**를 직접 확인했다.
+- 최근 1500 수신 간격의 p50/p95 **59.0/60.6 ms**, 누적 max **5856.2 ms**, window jitter SD **108.0 ms**를 관찰했다. 간격은 one-way 또는 motion-to-display latency가 아니며, 최대 공백의 원인은 이 snapshot만으로 잠금·background로 확정할 수 없다. Sequence gap 0%도 시간 공백이 없다는 뜻은 아니다.
+- iOS code는 background 전환 시 motion을 직접 stop하지 않지만 main Timer와 MainActor를 통해 송신한다. `bluetooth-peripheral`은 구성되어 있으나 앱 suspension 중 지속적인 센서 수집/25 Hz 송신을 보장하지 않는다. 현 단계 임시 사용 방법은 iOS Details의 `Keep screen on`과 foreground 유지이며, background의 정확한 중단 시점·복귀는 별도 재현이 필요하다.
+- Windows local app-data에는 settings와 Git sync log만 있었으며 상시 BLE diagnostic file은 없다. 현재 BLE 통계는 메모리의 live panel이고 Research CSV는 세션 시작 시 별도 생성된다. Windows에서는 iPhone Console/device log에 직접 접근하지 못한다.
+- 사용자 screenshot 요청에 따라 Windows Settings의 `M` tile, 큰 MotionCue 제목, tagline 및 중복 header-status pill을 제거했다. 첫 연결/current-status 카드가 26 px top padding 뒤 바로 시작한다. native window title·EXE/tray icon은 유지한다.
+- 공통 design system에 Windows header 없는 layout 규칙을 반영했다. iOS UI와 BLE/IMU/filter parameter는 이번 변경 범위에서 수정하지 않았다.
+- Windows Release helper를 다시 실행해 tests **30/30 통과**와 publish 성공을 확인했다. 갱신 EXE를 재실행해 screenshot과 accessibility tree에서 상단 브랜드/중복 status가 사라지고 첫 카드가 위로 이동한 것을 검수했다. 재시작으로 기존 BLE 구독과 메모리 통계는 초기화된다.
+
+---
+
 ## 2026-10-04 — Windows 0.2.0 재빌드 및 iPhone BLE 구독 확인
 
 상태: Release/test/앱 실행/BLE 구독 `VERIFIED`; 센서 수신 및 G1 bench 미검증
