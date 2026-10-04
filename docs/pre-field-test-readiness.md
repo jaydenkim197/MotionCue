@@ -2,7 +2,7 @@
 
 기준일: 2026-10-04 · 대상: iOS/Windows 0.2.0 pilot · 물리 bench 미완료
 
-배포 갱신(18:17 KST): iPhone 0.2.0/build 2 Release 서명·설치 완료. 실행 시 Untrusted Developer가 표시되어 기기의 개발자 신뢰 확인 대기다. 설치만으로 G1 통과를 뜻하지 않는다. 현재 provisioning 만료는 2026-10-11 17:40 KST이며 이후에는 재서명/재설치한다. 상세 증거는 개발 로그에 기록했다.
+배포 갱신(18:23 KST): iPhone 0.2.0/build 2 Release 서명·설치 및 개발자 신뢰 후 정상 실행 완료(debugger 없음). 실기기 UI의 Ready to connect / Calibration Ready와 새 아이콘을 확인했다. 보정·Windows 수신·G1 bench는 아직 미검증이다. 현재 provisioning 만료는 2026-10-11 17:40 KST이며 이후에는 재서명/재설치한다. 상세 증거는 개발 로그에 기록했다.
 
 ## 목표 완성도
 

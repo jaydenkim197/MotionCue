@@ -23,6 +23,18 @@
 
 ---
 
+## 2026-10-04 18:23 KST — 개발자 신뢰 후 iPhone 0.2.0 정상 실행 확인
+
+상태: 실기기 앱 실행/UI `VERIFIED`; Windows 수신·보정·G1 bench는 미검증
+
+- 사용자가 개발자 신뢰 설정 완료를 알린 뒤 기기 잠금 상태와 설치 앱을 확인했다. iPhone의 설치 버전은 **0.2.0 / build 2**이며, 일반 launch(debugger/console attach 없음)가 성공했다. 앞선 Untrusted Developer 실행 차단은 해소됐다.
+- 실제 앱 screenshot에서 새 waveform + dot 아이콘, 단일 connection/calibration card, Details gear와 한 줄 label을 확인했다. 기본 화면은 **Ready to connect / Calibration Ready**이며 Calibrate 버튼이 활성화돼 있었다. 해당 UI 상태는 Bluetooth powered/advertising 및 센서 사용 가능/fresh sample 조건을 반영한다. 정확한 센서 값·전송률·Windows 수신 성공을 screenshot만으로 검증했다고 표시하지 않는다.
+- 앱을 삭제하거나 인증서를 재생성하지 않았다. 코드/통신 형식/연구 조건 변경 없이 배포 검증 결과와 준비 문서만 갱신했다. 실기기 증거는 ignored `artifacts/ios-launch-trusted-20261004.json`, `artifacts/ios-device-trusted-0.2.0.png`에 보존하며 원본 기기 식별 정보는 Git에 넣지 않는다.
+- 작업 시작 시 fetched GitHub main과 Mac HEAD는 `82b8016`으로 같고 ahead/behind는 **0/0**, worktree는 clean이었다. 새 Windows remote commit은 없었다. Windows의 미push 파일/실행 중 EXE는 원격 확인하지 못했으며, source pull 뒤 Windows release helper로 재빌드해야 한다.
+- 다음 사용자 물리 작업: 화면을 위로 놓고 정지 상태에서 Calibrate → 최신 Windows EXE에서 Scan/Connect → Subscribed 및 iPhone Details의 Windows 1/Fresh/약 25 Hz/Frames 증가 확인. 이후 30분 foreground와 잠금·끊김·재연결 bench를 순서대로 기록한다. 현재는 G1/실차/참가자 시험 통과가 아니다.
+
+---
+
 ## 2026-10-04 18:17 KST — 최신 iOS Release 서명·설치 완료, 개발자 신뢰 확인 필요
 
 상태: 빌드/서명/설치 `VERIFIED`; 실기기 실행은 사용자 신뢰 확인 대기
